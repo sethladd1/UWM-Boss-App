@@ -15,7 +15,7 @@ import android.webkit.WebViewClient;
 
 public class WebLogin extends AppCompatActivity{
 
-    private String url = "https://google.com";
+    private String url = "https://uwm-boss.com/saml/sso";
     private WebView webView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
