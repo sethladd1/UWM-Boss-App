@@ -12,6 +12,7 @@ import android.util.Log;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Toast;
 
 public class WebLogin extends AppCompatActivity{
 
@@ -25,12 +26,18 @@ public class WebLogin extends AppCompatActivity{
         webView = (WebView) findViewById(R.id.webView);
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
-        MyClient client = new MyClient();
 
         webView.loadUrl(url);
-        webView.setWebViewClient(client);
+        webView.setWebViewClient(new WebViewClient(){
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                //        TODO: Not sure if this is exactly what the url will look like. Check.
+                if(url.trim() == "https://www.uwm-boss.com/saml/acs")
+                    successfulAuthentication();
+            }
 
-
+        });
 
     }
     public void successfulAuthentication(){
@@ -38,15 +45,4 @@ public class WebLogin extends AppCompatActivity{
         this.finish();
     }
 
-    private class MyClient extends WebViewClient {
-
-
-    @Override
-    public void onPageFinished(WebView view, String url) {
-        super.onPageFinished(view, url);
-//        TODO: Not sure if this is exactly what the url will look like. Check.
-        if(url.trim() == "https://www.uwm-boss.com/saml/acs")
-            successfulAuthentication();
-    }
-}
 }
