@@ -1,6 +1,8 @@
 package com.uwmbossapp.uwmboss;
 
+import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -8,12 +10,15 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
-
+    private final int WEBLOGIN = 0;
+    private SharedPreferences sharedPreferences;
+    private String token;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -25,7 +30,6 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
 
-
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -34,14 +38,48 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+//
         boolean loggedIn = false;
+
         // TODO: check to see if user is already logged in
+        sharedPreferences = getSharedPreferences("UWMBOSS", MODE_PRIVATE);
+        if(sharedPreferences.contains("token")){
+            token = sharedPreferences.getString("token", null);
+            if(token != null) {
+                loggedIn = true;
+
+//            TODO initiate communication with server
+            }
+        }
         if(!loggedIn){
             Intent loginIntent = new Intent(this, WebLogin.class);
-            startActivity(loginIntent);
+            startActivityForResult(loginIntent, WEBLOGIN);
         }
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        switch(requestCode){
+            case WEBLOGIN:
+                if(resultCode == Activity.RESULT_OK){
+                    token = data.getStringExtra("token");
+                    if(token != null) {
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putString("token", token);
+                        editor.apply();
+//                    TODO initiate communication with server
+                    }
+
+                }
+                break;
+            default:
+                break;
+
+
+        }
+    }
 
     @Override
     public void onBackPressed() {
