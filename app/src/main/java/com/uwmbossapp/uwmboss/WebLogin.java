@@ -1,27 +1,34 @@
 package com.uwmbossapp.uwmboss;
 
-import android.content.Context;
+
 import android.content.Intent;
-import android.os.AsyncTask;
-import android.os.SystemClock;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.AsyncTaskLoader;
-import android.support.v4.content.Loader;
+
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.webkit.CookieManager;
-import android.webkit.ValueCallback;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Toast;
+
+import java.net.CookieHandler;
+import java.net.CookieStore;
+import java.net.HttpCookie;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.List;
+
 
 public class WebLogin extends AppCompatActivity{
 
         private String url = "https://uwm-boss.com/saml/sso";
 
     private WebView webView;
+    private String TAG = "WebLogin";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,17 +36,20 @@ public class WebLogin extends AppCompatActivity{
         webView = (WebView) findViewById(R.id.webView);
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
-        webView.clearCache(true);
 
-        webView.loadUrl(url);
+        webView.loadUrl("https://uwm-boss.com/saml/logout");
         webView.setWebViewClient(new WebViewClient(){
             @Override
-            public void onPageFinished(WebView view, String url) {
-                super.onPageFinished(view, url);
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                super.onPageStarted(view, url, favicon);
                 if(url.trim().equals("https://uwm-boss.com/saml/acs")){
                     successfulAuthentication();
                 }
+                Log.i(TAG, "onPageStarted: "+ url);
             }
+
+
+
         });
 
     }
@@ -50,20 +60,24 @@ public class WebLogin extends AppCompatActivity{
         CookieManager cookieManager = CookieManager.getInstance();
         String cookies = cookieManager.getCookie(url);
         String cookieValue = null;
-        String[] temp=cookies.split(";");
-        for (String ar1 : temp ){
-            if(ar1.contains(cookieName)){
-                String[] temp1=ar1.split("=");
-                cookieValue = temp1[1];
+        Log.i(TAG, "getCookie: " + cookies);
+        if(cookies !=null) {
+            String[] temp = cookies.split(";");
+            for (String ar1 : temp) {
+                if (ar1.contains(cookieName)) {
+                    String[] temp1 = ar1.split("=");
+                    cookieValue = temp1[1];
+                }
             }
         }
         return cookieValue;
     }
-    public void successfulAuthentication(){
+    private void successfulAuthentication(){
         Intent resultIntent = new Intent();
         String token = getCookie("uwm-boss.com", "token");
         if (token != null) {
             resultIntent.putExtra("token", token.trim());
+
             setResult(RESULT_OK, resultIntent);
         }
         else
@@ -72,5 +86,7 @@ public class WebLogin extends AppCompatActivity{
         }
         finish();
     }
+
+
 
 }
