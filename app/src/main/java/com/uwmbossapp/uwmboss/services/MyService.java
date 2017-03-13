@@ -35,7 +35,6 @@ public class MyService extends IntentService {
 
         } catch (IOException e) {
             e.printStackTrace();
-            Log.i(TAG, "onHandleIntent: ioexception");
             return;
         }
         Log.i(TAG, "onHandleIntent: "+response);

@@ -33,11 +33,14 @@ public class WebLogin extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_web_login);
+
+
         webView = (WebView) findViewById(R.id.webView);
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
 
-        webView.loadUrl("https://uwm-boss.com/saml/logout");
+
+        webView.loadUrl(url);
         webView.setWebViewClient(new WebViewClient(){
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
@@ -47,7 +50,6 @@ public class WebLogin extends AppCompatActivity{
                 }
                 Log.i(TAG, "onPageStarted: "+ url);
             }
-
 
 
         });

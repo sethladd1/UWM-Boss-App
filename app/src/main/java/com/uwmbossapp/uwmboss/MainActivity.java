@@ -43,9 +43,8 @@ public class MainActivity extends AppCompatActivity
         @Override
         public void onReceive(Context context, Intent intent) {
             String message = intent.getStringExtra(MyService.MY_SERVICE_PAYLOAD);
-//            if(message.trim().equals("null")){
-//                login();
-//            }
+            if(message.trim().equals("null")){
+            }
 
             Log.i(TAG, "onReceive: \n" + message);
         }
@@ -94,7 +93,11 @@ public class MainActivity extends AppCompatActivity
         Intent loginIntent = new Intent(this, WebLogin.class);
         startActivityForResult(loginIntent, WEBLOGIN);
     }
-
+    public void callServer(String url){
+        Intent intent = new Intent(this, MyService.class);
+        intent.setData(Uri.parse(url));
+        startService(intent);
+    }
     private void storeCookie(String url, String name, String value){
         HttpCookie cookie = new HttpCookie(name,value);
         cookie.setPath("/");
@@ -127,9 +130,8 @@ public class MainActivity extends AppCompatActivity
                         editor.putString("token", token);
                         editor.apply();
 
-                        Intent intent = new Intent(this, MyService.class);
-                        intent.setData(Uri.parse(USER_URL));
-                        startService(intent);
+                        callServer("https://uwm-boss.com/cookies");
+                        callServer(USER_URL);
 
                     }
 
