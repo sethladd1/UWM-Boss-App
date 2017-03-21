@@ -40,6 +40,7 @@ public class MyService extends IntentService {
         Log.i(TAG, "onHandleIntent: "+response);
         Intent messageIntent = new Intent(MY_SERVICE_MESSAGE);
         messageIntent.putExtra(MY_SERVICE_PAYLOAD, response);
+        messageIntent.putExtra("url", uri.toString());
         LocalBroadcastManager manager =
                 LocalBroadcastManager.getInstance(getApplicationContext());
         manager.sendBroadcast(messageIntent);

@@ -42,13 +42,14 @@ public class WebLogin extends AppCompatActivity{
 
         webView.loadUrl(url);
         webView.setWebViewClient(new WebViewClient(){
+
             @Override
-            public void onPageStarted(WebView view, String url, Bitmap favicon) {
-                super.onPageStarted(view, url, favicon);
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
                 if(url.trim().equals("https://uwm-boss.com/saml/acs")){
                     successfulAuthentication();
                 }
-                Log.i(TAG, "onPageStarted: "+ url);
+                Log.i(TAG, "onPageFinished: "+ url);
             }
 
 
