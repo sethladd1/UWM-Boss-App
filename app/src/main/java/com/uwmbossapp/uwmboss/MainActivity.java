@@ -41,7 +41,6 @@ public class MainActivity extends AppCompatActivity {
             String url = intent.getStringExtra("url");
 
             String message = intent.getStringExtra(MyService.MY_SERVICE_PAYLOAD);
-            Log.i(TAG, "onReceive: "+message);
             if(message==null){
                 Toast.makeText(MainActivity.this, "Unable to connect to UWM BOSS server. We're sorry.", Toast.LENGTH_LONG).show();
             }
@@ -51,8 +50,10 @@ public class MainActivity extends AppCompatActivity {
                         if(message.trim().equals("null")){
                             login();
                         }
-                        else
-                            accountInfo=message;
+                        else {
+                            accountInfo = message;
+                            loggedIn=true;
+                        }
                         break;
                 }
 
@@ -114,12 +115,13 @@ public class MainActivity extends AppCompatActivity {
                 else{
                     login();
                 }
+                return true;
+            case R.id.action_settings:
+//                TODO: launch settings page
+                return true;
 
         }
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
+
 
 
         return super.onOptionsItemSelected(item);
@@ -170,9 +172,10 @@ public class MainActivity extends AppCompatActivity {
                         SharedPreferences.Editor editor = sharedPreferences.edit();
                         editor.putString("token", token);
                         editor.apply();
+                        loggedIn=true;
                         callServer(USER_URL);
                     }
-                    loggedIn=true;
+
 
                 }
                 else{
@@ -192,6 +195,7 @@ public class MainActivity extends AppCompatActivity {
                         } catch (URISyntaxException e) {
                             e.printStackTrace();
                         }
+                        android.webkit.CookieManager.getInstance().removeAllCookie();
                         loggedIn = false;
                     }
                 }
