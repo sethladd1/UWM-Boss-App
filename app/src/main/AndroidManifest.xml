@@ -21,9 +21,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".WebLogin"></activity>
-        <service android:name=".services.MyService"
-            android:exported="false"/>
+        <activity android:name=".WebLogin" />
+
+        <service
+            android:name=".services.MyService"
+            android:exported="false" />
+
+        <activity android:name=".AccountActivity"></activity>
     </application>
 
 </manifest>

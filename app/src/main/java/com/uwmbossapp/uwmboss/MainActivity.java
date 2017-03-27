@@ -8,52 +8,53 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.design.widget.NavigationView;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.uwmbossapp.uwmboss.services.MyService;
 
 import java.net.CookieHandler;
 import java.net.CookieManager;
-import java.net.CookieStore;
 import java.net.HttpCookie;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
 
 
 public class MainActivity extends AppCompatActivity {
     private static final String USER_URL = "https://uwm-boss.com/admin/users/show";
-    private final int WEBLOGIN = 0;
+    private final int WEBLOGINID = 0;
+    private final int ACCOUNTACTIVITYID=1;
     private SharedPreferences sharedPreferences;
     private String token;
     private static final String TAG = "Main";
     private boolean loggedIn;
+    private String accountInfo = null;
+    HttpCookie tokenCookie;
     private BroadcastReceiver receiver =  new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String url = intent.getStringExtra("url");
-//            Log.i(TAG, "onReceive: url=" + url);
-            switch (url){
-                case USER_URL:
-                    String message = intent.getStringExtra(MyService.MY_SERVICE_PAYLOAD);
-                    if(message.trim().equals("null")){
-                        login();
-                    }
-//TODO: populate user info with received data
-//                    Log.i(TAG, "onReceive: \n" + message);
-                    break;
+
+            String message = intent.getStringExtra(MyService.MY_SERVICE_PAYLOAD);
+            Log.i(TAG, "onReceive: "+message);
+            if(message==null){
+                Toast.makeText(MainActivity.this, "Unable to connect to UWM BOSS server. We're sorry.", Toast.LENGTH_LONG).show();
             }
+            else
+                switch (url){
+                    case USER_URL:
+                        if(message.trim().equals("null")){
+                            login();
+                        }
+                        else
+                            accountInfo=message;
+                        break;
+                }
 
         }
     };
@@ -65,23 +66,22 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(receiver, new IntentFilter(MyService.MY_SERVICE_MESSAGE));
         loggedIn = false;
 
-        Log.i(TAG, "onCreate: ");
+
         sharedPreferences = getSharedPreferences("UWMBOSS", MODE_PRIVATE);
         if(sharedPreferences.contains("token")){
-            
+
             token = sharedPreferences.getString("token", null);
-//            Log.i(TAG, "onCreate: token in SP="+token);
+
             if(token != null) {
                 loggedIn = true;
                 storeCookie("https://uwm-boss.com", "token", token);
+                callServer(USER_URL);
             }
         }
-        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(receiver, new IntentFilter(MyService.MY_SERVICE_MESSAGE));
         if(!loggedIn){
-//            Log.i(TAG, "onCreate: no token in SP. Logging in.");
             login();
         }
     }
@@ -99,18 +99,35 @@ public class MainActivity extends AppCompatActivity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
+        switch (id){
+            case R.id.action_account:
 
+                if(loggedIn){
+                    if(accountInfo != null) {
+                        Intent accountIntent = new Intent(this, AccountActivity.class);
+                        accountIntent.putExtra("accountInfo", accountInfo);
+                        startActivityForResult(accountIntent, ACCOUNTACTIVITYID);
+                    }
+                    else
+                        callServer(USER_URL);
+                }
+                else{
+                    login();
+                }
+
+        }
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
         }
 
+
         return super.onOptionsItemSelected(item);
     }
     private void login(){
-        Toast.makeText(this, "Please log in with your UWM credentials", Toast.LENGTH_SHORT);
+        Toast.makeText(this, "Please log in with your UWM credentials", Toast.LENGTH_SHORT).show();
         Intent loginIntent = new Intent(this, WebLogin.class);
-        startActivityForResult(loginIntent, WEBLOGIN);
+        startActivityForResult(loginIntent, WEBLOGINID);
     }
     public void callServer(String url){
         if(!loggedIn){
@@ -123,10 +140,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     private void storeCookie(String url, String name, String value){
-        HttpCookie cookie = new HttpCookie(name,value);
-        cookie.setPath("/");
-        cookie.setDomain("uwm-boss.com");
-        cookie.setVersion(0);
+        tokenCookie = new HttpCookie(name,value);
+        tokenCookie.setPath("/");
+        tokenCookie.setDomain("uwm-boss.com");
+        tokenCookie.setVersion(0);
 
         CookieManager cookieManager = (CookieManager)CookieHandler.getDefault();
         if(cookieManager==null){
@@ -134,7 +151,7 @@ public class MainActivity extends AppCompatActivity {
             cookieManager = (CookieManager)CookieHandler.getDefault();
         }
         try {
-            cookieManager.getCookieStore().add(new URI(url), cookie);
+            cookieManager.getCookieStore().add(new URI(url), tokenCookie);
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
@@ -144,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         switch(requestCode){
-            case WEBLOGIN:
+            case WEBLOGINID:
                 if(resultCode == Activity.RESULT_OK){
                     token = data.getStringExtra("token");
 
@@ -161,7 +178,24 @@ public class MainActivity extends AppCompatActivity {
                 else{
                     loggedIn=false;
                 }
-                break;
+                return;
+            case ACCOUNTACTIVITYID:
+                if(resultCode == Activity.RESULT_OK){
+                    boolean logout = data.getBooleanExtra("logout", false);
+                    if(logout){
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.remove("token");
+                        CookieManager cookieManager = (CookieManager)CookieHandler.getDefault();
+                        try {
+                            cookieManager.getCookieStore().remove(new URI("https://uwm-boss.com"), tokenCookie);
+
+                        } catch (URISyntaxException e) {
+                            e.printStackTrace();
+                        }
+                        loggedIn = false;
+                    }
+                }
+                return;
             default:
                 break;
 

@@ -27,7 +27,7 @@ public class MyService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         Uri uri = intent.getData();
-        Log.i(TAG, "onHandleIntent: " + uri.toString());
+
 
         String response;
         try {
@@ -37,7 +37,6 @@ public class MyService extends IntentService {
             e.printStackTrace();
             return;
         }
-        Log.i(TAG, "onHandleIntent: "+response);
         Intent messageIntent = new Intent(MY_SERVICE_MESSAGE);
         messageIntent.putExtra(MY_SERVICE_PAYLOAD, response);
         messageIntent.putExtra("url", uri.toString());
