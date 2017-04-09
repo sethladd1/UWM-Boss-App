@@ -123,6 +123,12 @@ public class MainActivity extends AppCompatActivity {
 //                TODO: launch settings page
                 return true;
 
+            case R.id.action_profile:
+                startActivity(new Intent(this, profile.class));
+
+                
+            case R.id.action_report:
+                startActivity(new Intent(this, report.class));
         }
 
 
