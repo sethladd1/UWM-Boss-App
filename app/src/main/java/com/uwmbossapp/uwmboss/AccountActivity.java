@@ -21,7 +21,6 @@ public class AccountActivity extends AppCompatActivity {
         user = (TextView) findViewById(R.id.userText);
         accountType = (TextView) findViewById(R.id.accountTypeText);
         String accountInfo = getIntent().getStringExtra("accountInfo");
-        Log.i(TAG, "onCreate: " + accountInfo);
         try {
             JSONObject jsonObject = new JSONObject(accountInfo);
             String email = jsonObject.getString("email");

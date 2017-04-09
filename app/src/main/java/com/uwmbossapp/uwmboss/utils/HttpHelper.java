@@ -9,6 +9,7 @@ package com.uwmbossapp.uwmboss.utils;
         import java.io.ByteArrayOutputStream;
         import java.io.IOException;
         import java.io.InputStream;
+        import java.io.OutputStreamWriter;
         import java.net.CookieHandler;
         import java.net.CookieManager;
         import java.net.HttpCookie;
@@ -31,22 +32,64 @@ public class HttpHelper {
      * @throws IOException
      */
        private static String TAG = "HttpHelper";
-    public static String downloadUrl(String address) throws IOException {
+//    public static String downloadUrl(String address) throws IOException {
+//
+//        InputStream is = null;
+//        try {
+//
+//            URL url = new URL(address);
+//            HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
+//            conn.setReadTimeout(10000);
+//            conn.setConnectTimeout(15000);
+//            conn.setRequestMethod("GET");
+//            conn.setDoInput(true);
+//            conn.connect();
+//
+//            int responseCode = conn.getResponseCode();
+//            if (responseCode != 200) {
+//                throw new IOException("Got response code " + responseCode);
+//            }
+//            is = conn.getInputStream();
+//            return readStream(is);
+//
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        } finally {
+//            if (is != null) {
+//                is.close();
+//            }
+//        }
+//        return null;
+//    }
+//    TODO: make this adaptable for all request types
+    public static String makeHTTPRequest(String address, String message, String requestType) throws IOException {
 
         InputStream is = null;
         try {
+            Log.i(TAG, "makeHTTPRequest: msg=" + message);
+            Log.i(TAG, "makeHTTPRequest: url=" +address);
 
             URL url = new URL(address);
             HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
             conn.setReadTimeout(10000);
             conn.setConnectTimeout(15000);
-            conn.setRequestMethod("GET");
+            requestType = requestType.trim();
+            conn.setRequestMethod(requestType.toUpperCase());
             conn.setDoInput(true);
+            if(requestType.equalsIgnoreCase("post") || requestType.equalsIgnoreCase("put") || requestType.equalsIgnoreCase("patch")) {
+                conn.setDoOutput(true);
+                OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream());
+                writer.write(message);
+                writer.flush();
+                writer.close();
+            }
             conn.connect();
 
             int responseCode = conn.getResponseCode();
+            Log.i(TAG, "postToUrl: " +responseCode);
             if (responseCode != 200) {
                 throw new IOException("Got response code " + responseCode);
+
             }
             is = conn.getInputStream();
             return readStream(is);
@@ -60,7 +103,6 @@ public class HttpHelper {
         }
         return null;
     }
-
     /**
      * Reads an InputStream and converts it to a String.
      *

@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.uwmbossapp.uwmboss.utils.HttpHelper;
 
 import java.io.IOException;
@@ -28,21 +29,23 @@ public class MyService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         Uri uri = intent.getData();
 
-
-        String response;
+        String type = intent.getStringExtra("requestType");
+        String response=null;
+        String token=FirebaseInstanceId.getInstance().getToken();
+        String msg = intent.getStringExtra("message");
+        Log.i(TAG, "sendRegistrationToServer: sent email");
         try {
-            response = HttpHelper.downloadUrl(uri.toString());
-
+            response = HttpHelper.makeHTTPRequest(uri.toString(), msg, type);
         } catch (IOException e) {
             e.printStackTrace();
-            return;
         }
+
         Intent messageIntent = new Intent(MY_SERVICE_MESSAGE);
         messageIntent.putExtra(MY_SERVICE_PAYLOAD, response);
         messageIntent.putExtra("url", uri.toString());
         LocalBroadcastManager manager =
                 LocalBroadcastManager.getInstance(getApplicationContext());
         manager.sendBroadcast(messageIntent);
-
     }
 }
+
