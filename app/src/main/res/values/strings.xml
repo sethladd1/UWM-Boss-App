@@ -6,4 +6,6 @@
 
     <string name="action_settings">Settings</string>
     <string name="account">account</string>
+    <string name="profile">profile</string>
+    <string name="report">report</string>
 </resources>

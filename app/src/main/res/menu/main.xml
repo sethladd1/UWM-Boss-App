@@ -2,16 +2,31 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.uwmbossapp.uwm_boss.MainActivity">
-    <!--<item-->
-        <!--android:id="@+id/action_settings"-->
-        <!--android:orderInCategory="100"-->
-        <!--android:title="@string/action_settings"-->
-        <!--app:showAsAction="never" />-->
+    <item
+        android:id="@+id/action_settings"
+        android:orderInCategory="200"
+        android:title="@string/action_settings"
+        app:showAsAction="never" />
     <item
         android:id="@+id/action_account"
-        android:orderInCategory="0"
+        android:orderInCategory="199"
         android:title="@string/account"
         app:showAsAction="always"
         android:icon="@drawable/ic_action_account"/>
+
+    <item
+        android:id="@+id/action_profile"
+        android:orderInCategory="100"
+        android:title="@string/profile"
+        app:showAsAction="always"
+        android:icon="@drawable/ic_action_profile"/>
+
+    <item
+        android:id="@+id/action_report"
+        android:orderInCategory="50"
+        android:title="@string/report"
+        app:showAsAction="always"
+        android:icon="@drawable/ic_action_report"/>
+
 
 </menu>
