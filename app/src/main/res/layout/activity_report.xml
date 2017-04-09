@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.uwmbossapp.uwmboss.report">
+
+    <include layout="@layout/toolbar"
+        android:id="@+id/mToolbar"/>
+
+    <TextView
+        android:id="@+id/avgTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Average wait time for a ride: 15min"
+        android:textColor="@color/colorPrimary"
+        tools:layout_editor_absoluteX="38dp"
+        tools:layout_editor_absoluteY="118dp" />
+
+    <TextView
+        android:id="@+id/curTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Current wait time:"
+        android:textColor="@color/colorPrimary"
+        tools:layout_editor_absoluteX="38dp"
+        tools:layout_editor_absoluteY="176dp" />
+
+    <Button
+        android:id="@+id/cancelRide"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Cancel Ride"
+        android:background="@color/colorPrimary"
+        android:textColor="@color/colorAccent"
+        tools:layout_editor_absoluteX="111dp"
+        tools:layout_editor_absoluteY="248dp" />
+
+    <Chronometer
+        android:id="@+id/simpleChronometer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/colorPrimary"
+        tools:layout_editor_absoluteY="176dp"
+        tools:layout_editor_absoluteX="184dp" />
+
+</android.support.constraint.ConstraintLayout>

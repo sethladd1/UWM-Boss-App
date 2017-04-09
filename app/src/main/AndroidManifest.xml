@@ -14,7 +14,7 @@
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -27,7 +27,9 @@
             android:name=".services.MyService"
             android:exported="false" />
 
-        <activity android:name=".AccountActivity"></activity>
+        <activity android:name=".AccountActivity" />
+        <activity android:name=".report" />
+        <activity android:name=".profile"></activity>
     </application>
 
 </manifest>

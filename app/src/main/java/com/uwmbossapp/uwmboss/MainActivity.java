@@ -67,6 +67,9 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        getSupportActionBar().setTitle("UWM BOSS");
+        //getSupportActionBar().setIcon(getDrawable(R.drawable.profile));
+
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(receiver, new IntentFilter(MyService.MY_SERVICE_MESSAGE));
         loggedIn = false;
 
