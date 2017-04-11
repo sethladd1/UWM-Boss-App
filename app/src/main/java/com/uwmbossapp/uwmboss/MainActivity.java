@@ -1,6 +1,6 @@
 package com.uwmbossapp.uwmboss;
 
-import android.*;
+
 import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
@@ -23,18 +23,26 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
+import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.uwmbossapp.uwmboss.services.MyFirebaseInstanceIDService;
 import com.uwmbossapp.uwmboss.services.MyFirebaseMessagingService;
@@ -50,11 +58,12 @@ import java.net.URISyntaxException;
 
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
-    private static final String USER_URL = "https://uwm-boss.com/admin/users/show";
-    private static final String FIREBASE_TOKENS_URL = "https://boss-30632.firebaseio.com/tokens.json";
+    private static final String USER_URL = "https://uwm-boss.com/admin/users/show",
+    FIREBASE_TOKENS_URL = "https://boss-30632.firebaseio.com/tokens.json",
+    REQUEST_RIDE_URL = "https://uwm-boss.com/admin/ride";
     //    append username+".json" to this url when calling
     private static final String FIREBASE_USER_URL = "https://boss-30632.firebaseio.com/tokens/";
-    private final int WEBLOGINID = 0, ACCOUNTACTIVITYID = 1, SETCURLOCPERMISSION = 55;
+    private final int WEBLOGINID = 0, ACCOUNTACTIVITYID = 1, SETCURLOCPERMISSION = 55, SETDESTTOCURLOC=56;
     private SharedPreferences sharedPreferences;
     private String token;
     private static final String TAG = "Main";
@@ -62,7 +71,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private String accountInfo = null, username = null;
     private HttpCookie tokenCookie;
     private GoogleApiClient mLocationClient;
+    private Marker destMarker, pickupMarker;
     private GoogleMap mMap;
+    private LatLng dest, pickup;
     private static final int ERROR_DIALOG_REQUEST = 78898;
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
@@ -115,6 +126,57 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        PlaceAutocompleteFragment autocompleteFragmentDest = (PlaceAutocompleteFragment)
+                getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment_dest);
+        autocompleteFragmentDest.setHint("Where to?");
+        autocompleteFragmentDest.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(Place place) {
+
+                dest = place.getLatLng();
+                if(mMap != null){
+                    if(destMarker != null){
+                        destMarker.remove();
+                    }
+                    MarkerOptions options = new MarkerOptions().title("Destination").position(dest);
+                    destMarker = mMap.addMarker(options);
+                    CameraUpdate update = CameraUpdateFactory.newLatLngZoom(dest, 15);
+                    mMap.animateCamera(update);
+                }
+                Log.i(TAG, "Place: " + place.getLatLng());
+            }
+
+            @Override
+            public void onError(Status status) {
+                // TODO: Handle the error.
+                Log.i(TAG, "An error occurred: " + status);
+            }
+        });
+        PlaceAutocompleteFragment autocompleteFragmentPickup = (PlaceAutocompleteFragment)
+                getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment_pick_up);
+        autocompleteFragmentPickup.setHint("Pick Up (default: your location)");
+        autocompleteFragmentPickup.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(Place place) {
+                pickup = place.getLatLng();
+                if(mMap != null){
+                    if(pickupMarker!=null){
+                        pickupMarker.remove();
+                    }
+                    MarkerOptions options = new MarkerOptions().title("Pick Up").position(pickup);
+                    pickupMarker =  mMap.addMarker(options);
+                    CameraUpdate update = CameraUpdateFactory.newLatLngZoom(pickup, 15);
+                    mMap.animateCamera(update);
+                }
+                Log.i(TAG, "Place: " + place.getName());
+            }
+
+            @Override
+            public void onError(Status status) {
+                // TODO: Handle the error.
+                Log.i(TAG, "An error occurred: " + status);
+            }
+        });
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(receiver, new IntentFilter(MyService.MY_SERVICE_MESSAGE));
         mLocationClient = new GoogleApiClient.Builder(this)
                 .addApi(LocationServices.API)
@@ -128,7 +190,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             if (sharedPreferences.contains("token")) {
                 token = sharedPreferences.getString("token", null);
                 username = sharedPreferences.getString("username", null);
-                if (token != null || username != null) {
+                if (token != null && username != null) {
                     loggedIn = true;
                     storeCookie("https://uwm-boss.com", "token", token);
                     callServer(USER_URL, null, "GET");
@@ -173,7 +235,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     login();
                 }
                 return true;
+            case R.id.action_profile:
+                startActivity(new Intent(this, profile.class));
 
+
+            case R.id.action_report:
+                startActivity(new Intent(this, report.class));
 
         }
 
@@ -289,7 +356,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 public void onMapReady(GoogleMap googleMap) {
                     mMap = googleMap;
                     Log.i(TAG, "onMapReady: mMap set");
-//                    if location client is connected first set location, otherwise onConnection will handle it
+//                    in case location services isn't available, show UWM
+                    LatLng uwmLatLng = new LatLng(43.078252, -87.881995);
+                    CameraUpdate update = CameraUpdateFactory.newLatLngZoom(uwmLatLng, 15);
+                    mMap.moveCamera(update);
+//                    if location client is connected first, set location, otherwise onConnection will handle it
                     if(mLocationClient.isConnected())
                         setCurrentLocation();
                 }
@@ -308,9 +379,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 break;
             }
         }
-        if(requestCode==SETCURLOCPERMISSION && granted){
-            setCurrentLocation();
+        if(granted) {
+            if (requestCode == SETCURLOCPERMISSION) {
+                setCurrentLocation();
+            }
+            else if(requestCode==SETDESTTOCURLOC){
+                getRide(null);
+            }
         }
+
     }
 
     private void setCurrentLocation() {
@@ -337,6 +414,36 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             mMap.animateCamera(update);
         }
     }
+    public void getRide(View v){
+        if(dest != null){
+
+            if(pickup ==null){
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    String[] permissions = new String[2];
+                    permissions[0] = Manifest.permission.ACCESS_FINE_LOCATION;
+                    permissions[1] = Manifest.permission.ACCESS_COARSE_LOCATION;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        requestPermissions(permissions, SETCURLOCPERMISSION);
+                    }
+                    return;
+                }
+                Location currentLocation = LocationServices.FusedLocationApi.getLastLocation(mLocationClient);
+                if(currentLocation==null){
+                    Toast.makeText(this, "Unable to get location. Please enter pick up location manually", Toast.LENGTH_LONG).show();
+                    return;
+                }
+            }
+            String json = "{\"picklat\":\""+new Double(pickup.latitude)
+                    +"\",\"picklong\":\""+new Double(pickup.longitude)
+                    +"\",\"destlat\":\""+new Double(dest.latitude)
+                    +"\",\"destlong\":\""+new Double(dest.longitude)+"\"}";
+            callServer(REQUEST_RIDE_URL, json, "PUT");
+
+        }
+        else{
+            Toast.makeText(this, "Destination is required for ride request", Toast.LENGTH_SHORT).show();
+        }
+    }
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         Log.i(TAG, "onConnected: ");
@@ -344,7 +451,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         if(mMap != null)
             setCurrentLocation();
     }
-
     @Override
     public void onConnectionSuspended(int i) {
         Log.i(TAG, "onConnectionSuspended: ");

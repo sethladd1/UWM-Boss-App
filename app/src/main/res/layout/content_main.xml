@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/content_main"
     android:layout_width="match_parent"
@@ -20,32 +21,9 @@
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
 
-        android:layout_width="match_parent" android:layout_height="match_parent">
+        android:layout_width="match_parent" android:layout_height="330dp">
 
     </fragment>
-
-    <EditText
-        android:id="@+id/editText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="textPostalAddress"
-        android:hint="Where to?"
-        android:layout_marginTop="72dp"
-        android:layout_alignTop="@+id/editText2"
-        android:layout_alignStart="@+id/editText2" />
-
-    <EditText
-        android:id="@+id/editText2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="textPostalAddress"
-        android:hint="Pick-Up"
-        android:layout_marginTop="22dp"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginStart="83dp" />
 
     <Button
         android:id="@+id/button"
@@ -54,7 +32,35 @@
         android:text="Get a Ride!"
         android:background="@color/colorPrimary"
         android:textColor="@color/colorAccent"
-        android:layout_below="@+id/editText"
+
+        android:layout_below="@+id/listView"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="55dp" />
+        android:layout_marginTop="10dp"
+        android:onClick="getRide"/>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:id="@+id/listView"
+        android:layout_below="@+id/map"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="17dp">
+
+        <fragment
+            android:id="@+id/place_autocomplete_fragment_dest"
+
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"
+            />
+        <fragment
+            android:id="@+id/place_autocomplete_fragment_pick_up"
+            android:layout_marginTop="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"
+            />
+    </LinearLayout>
+
 </RelativeLayout>
