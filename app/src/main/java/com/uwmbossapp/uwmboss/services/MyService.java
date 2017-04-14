@@ -31,9 +31,7 @@ public class MyService extends IntentService {
 
         String type = intent.getStringExtra("requestType");
         String response=null;
-        String token=FirebaseInstanceId.getInstance().getToken();
         String msg = intent.getStringExtra("message");
-        Log.i(TAG, "sendRegistrationToServer: sent email");
         try {
             response = HttpHelper.makeHTTPRequest(uri.toString(), msg, type);
         } catch (IOException e) {

@@ -32,36 +32,7 @@ public class HttpHelper {
      * @throws IOException
      */
        private static String TAG = "HttpHelper";
-//    public static String downloadUrl(String address) throws IOException {
-//
-//        InputStream is = null;
-//        try {
-//
-//            URL url = new URL(address);
-//            HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
-//            conn.setReadTimeout(10000);
-//            conn.setConnectTimeout(15000);
-//            conn.setRequestMethod("GET");
-//            conn.setDoInput(true);
-//            conn.connect();
-//
-//            int responseCode = conn.getResponseCode();
-//            if (responseCode != 200) {
-//                throw new IOException("Got response code " + responseCode);
-//            }
-//            is = conn.getInputStream();
-//            return readStream(is);
-//
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        } finally {
-//            if (is != null) {
-//                is.close();
-//            }
-//        }
-//        return null;
-//    }
-//    TODO: make this adaptable for all request types
+
     public static String makeHTTPRequest(String address, String message, String requestType) throws IOException {
 
         InputStream is = null;
