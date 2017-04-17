@@ -38,7 +38,7 @@ public class MainDriverActivity extends AppCompatActivity {
     private SharedPreferences sharedPreferences;
     private Fragment frag_view;
     private Location location;
-    private final int GET_LOC_PERMISSION = 25;
+    private static final int GET_LOC_PERMISSION = 25;
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
 
