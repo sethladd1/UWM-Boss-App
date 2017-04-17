@@ -4,6 +4,8 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.ListFragment;
+import android.support.v4.widget.CursorAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,15 +20,13 @@ import com.uwmbossapp.uwmboss.R;
  * Use the {@link PassengerQueueTableFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class PassengerQueueTableFragment extends Fragment {
+public class PassengerQueueTableFragment extends ListFragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
+    private static final String SIZE_ARG = "param1";
+    private static final String PSNGRS_URL =  "https://uwm-boss.com/admin/passengers/show/waiting";
     // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private int mParam1;
 
     private OnFragmentInteractionListener mListener;
 
@@ -38,16 +38,14 @@ public class PassengerQueueTableFragment extends Fragment {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
+     * @param param1 list size
      * @return A new instance of fragment PassengerQueueTableFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static PassengerQueueTableFragment newInstance(String param1, String param2) {
+    public static PassengerQueueTableFragment newInstance(int param1) {
         PassengerQueueTableFragment fragment = new PassengerQueueTableFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
+        args.putInt(SIZE_ARG, param1);
         fragment.setArguments(args);
         return fragment;
     }
@@ -56,9 +54,9 @@ public class PassengerQueueTableFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            mParam1 = getArguments().getInt(SIZE_ARG);
         }
+
     }
 
     @Override
@@ -69,7 +67,7 @@ public class PassengerQueueTableFragment extends Fragment {
     }
 
     // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
+    public void onElementSelected(Uri uri) {
         if (mListener != null) {
             mListener.onFragmentInteraction(uri);
         }

@@ -21,12 +21,13 @@ import com.uwmbossapp.uwmboss.R;
 public class DriverHomeFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
+    private static final String DRIVER_LOC_ARG = "param1";
+    private static final String PSNGR_PICK_UP_ARG = "param3";
+    private static final String PSNGR_DROP_OFF_ARG = "param2";
     // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private float mParam1;
+    private float mParam2;
+    private float mParam3;
 
     private OnFragmentInteractionListener mListener;
 
@@ -38,16 +39,18 @@ public class DriverHomeFragment extends Fragment {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
+     * @param param1 driver geolocations.
+     * @param param2 psngr pickup geolocation.
+     * @param param3 psngr dropoff geolocation.
      * @return A new instance of fragment DriverHomeFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static DriverHomeFragment newInstance(String param1, String param2) {
+    public static DriverHomeFragment newInstance(float param1, float param2, float param3) {
         DriverHomeFragment fragment = new DriverHomeFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
+        args.putFloat(DRIVER_LOC_ARG, param1);
+        args.putFloat(PSNGR_PICK_UP_ARG, param2);
+        args.putFloat(PSNGR_DROP_OFF_ARG, param3);
         fragment.setArguments(args);
         return fragment;
     }
@@ -56,8 +59,9 @@ public class DriverHomeFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            mParam1 = getArguments().getFloat(DRIVER_LOC_ARG);
+            mParam2 = getArguments().getFloat(PSNGR_PICK_UP_ARG);
+            mParam3 = getArguments().getFloat(PSNGR_DROP_OFF_ARG);
         }
     }
 

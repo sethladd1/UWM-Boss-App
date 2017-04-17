@@ -1,4 +1,4 @@
-package com.uwmbossapp.uwmboss;
+package models;
 
 /**
  * Created by jrhayman on 4/16/17.

@@ -1,9 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.uwmbossapp.uwmboss.utils.DriverLogin">
+    android:background="#888"
+    tools:context="com.uwmbossapp.uwmboss.DriverLogin"
+    >
 
-</android.support.constraint.ConstraintLayout>
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/van_id_edit_text"
+        android:layout_marginLeft="50dp"
+        android:layout_marginRight="50dp"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:inputType="numberDecimal"
+        android:textSize="20dp"
+        android:hint="Van ID"
+        android:textAlignment="center"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/van_login_button"
+        android:layout_below="@id/van_id_edit_text"
+        android:layout_centerHorizontal="true"
+        android:background="@color/colorAccent"
+        android:textAlignment="center"
+        android:text="Sign In"
+        android:elevation="20dp"/>
+
+</RelativeLayout>
