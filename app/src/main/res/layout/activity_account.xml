@@ -10,6 +10,8 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.uwmbossapp.uwmboss.AccountActivity">
 
+    <include layout="@layout/toolbar"
+        android:id="@+id/mToolbar"/>
     <TextView
         android:text=""
         android:layout_width="wrap_content"

@@ -6,7 +6,6 @@ import android.net.Uri;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
-import com.google.firebase.iid.FirebaseInstanceId;
 import com.uwmbossapp.uwmboss.utils.HttpHelper;
 
 import java.io.IOException;
@@ -32,15 +31,23 @@ public class MyService extends IntentService {
         String type = intent.getStringExtra("requestType");
         String response=null;
         String msg = intent.getStringExtra("message");
+        String errorMessage ="";
+        boolean success = true;
         try {
             response = HttpHelper.makeHTTPRequest(uri.toString(), msg, type);
         } catch (IOException e) {
+            success=false;
+            errorMessage = e.getMessage();
             e.printStackTrace();
         }
 
         Intent messageIntent = new Intent(MY_SERVICE_MESSAGE);
         messageIntent.putExtra(MY_SERVICE_PAYLOAD, response);
         messageIntent.putExtra("url", uri.toString());
+        messageIntent.putExtra("success", success);
+        messageIntent.putExtra("errorMessage", errorMessage);
+
+
         LocalBroadcastManager manager =
                 LocalBroadcastManager.getInstance(getApplicationContext());
         manager.sendBroadcast(messageIntent);

@@ -63,7 +63,7 @@ import java.net.URISyntaxException;
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     private static final String USER_URL = "https://uwm-boss.com/admin/users/show",
             FIREBASE_TOKENS_URL = "https://boss-30632.firebaseio.com/tokens.json",
-            REQUEST_RIDE_URL = "https://uwm-boss.com/admin/ride", COOKIES="https://uwm-boss.com/cookies";
+            REQUEST_RIDE_URL = "https://uwm-boss.com/admin/rides", COOKIES="https://uwm-boss.com/cookies";
     //    append username+".json" to this url when calling
     private static final String FIREBASE_USER_URL = "https://boss-30632.firebaseio.com/tokens/";
     private final int WEBLOGINID = 0, ACCOUNTACTIVITYID = 1, SETCURLOCPERMISSION = 55, SETDESTTOCURLOC=56;
@@ -77,7 +77,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private Marker destMarker, pickupMarker;
     private GoogleMap mMap;
     private LatLng dest, pickup;
-
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -85,7 +84,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             String message = intent.getStringExtra(MyService.MY_SERVICE_PAYLOAD);
             switch (url) {
                 case USER_URL:
-                    Log.i(TAG, "onReceive: " + message);
                     if (message == null) {
                         Toast.makeText(MainActivity.this, "Unable to connect to UWM BOSS server. We're sorry.", Toast.LENGTH_LONG).show();
                         loggedIn = false;
@@ -151,7 +149,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     CameraUpdate update = CameraUpdateFactory.newLatLngZoom(dest, 15);
                     mMap.animateCamera(update);
                 }
-                Log.i(TAG, "Place: " + place.getLatLng());
             }
 
             @Override
@@ -177,7 +174,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     CameraUpdate update = CameraUpdateFactory.newLatLngZoom(pickup, 15);
                     mMap.animateCamera(update);
                 }
-                Log.i(TAG, "Place: " + place.getName());
             }
 
             @Override
@@ -202,7 +198,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 if (token != null && username != null) {
                     loggedIn = true;
                     storeCookie("https://uwm-boss.com", "token", token);
-                    Log.i(TAG, "onCreate: token=" +token);
                     callServer(USER_URL, null, "GET");
                 }
             }
@@ -245,10 +240,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     login();
                 }
                 return true;
-            case R.id.action_profile:
-                startActivity(new Intent(this, profile.class));
-
-
             case R.id.action_report:
                 startActivity(new Intent(this, report.class));
 
@@ -284,7 +275,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         tokenCookie.setPath("/");
         tokenCookie.setDomain(url);
         tokenCookie.setVersion(0);
-        Log.i(TAG, "storeCookie: " +name+"=" +value);
         CookieManager cookieManager = (CookieManager) CookieHandler.getDefault();
         if (cookieManager == null) {
             CookieHandler.setDefault(new CookieManager());
@@ -358,7 +348,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 public void onMapReady(GoogleMap googleMap) {
                     mMap = googleMap;
                     Log.i(TAG, "onMapReady: mMap set");
-//                    in case location services isn't available, show UWM
+//                    coordinates of UWM
                     LatLng uwmLatLng = new LatLng(43.078252, -87.881995);
                     CameraUpdate update = CameraUpdateFactory.newLatLngZoom(uwmLatLng, 12);
                     mMap.moveCamera(update);
@@ -503,7 +493,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         Log.i(TAG, "onConnected: ");
-
     }
     @Override
     public void onConnectionSuspended(int i) {
