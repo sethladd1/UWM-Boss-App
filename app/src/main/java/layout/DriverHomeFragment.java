@@ -8,6 +8,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
 import com.uwmbossapp.uwmboss.R;
 
 /**
@@ -18,17 +25,12 @@ import com.uwmbossapp.uwmboss.R;
  * Use the {@link DriverHomeFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class DriverHomeFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
+public class DriverHomeFragment extends SupportMapFragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String DRIVER_LOC_ARG = "param1";
-    private static final String PSNGR_PICK_UP_ARG = "param3";
-    private static final String PSNGR_DROP_OFF_ARG = "param2";
-    // TODO: Rename and change types of parameters
-    private float mParam1;
-    private float mParam2;
-    private float mParam3;
 
+    private float[] mParam1;
+    private GoogleMap map;
     private OnFragmentInteractionListener mListener;
 
     public DriverHomeFragment() {
@@ -39,18 +41,14 @@ public class DriverHomeFragment extends Fragment {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param param1 driver geolocations.
-     * @param param2 psngr pickup geolocation.
-     * @param param3 psngr dropoff geolocation.
+     * @param param1 float[2] {Lat, Long}.
      * @return A new instance of fragment DriverHomeFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static DriverHomeFragment newInstance(float param1, float param2, float param3) {
+    public static DriverHomeFragment newInstance(float[] param1) {
         DriverHomeFragment fragment = new DriverHomeFragment();
         Bundle args = new Bundle();
-        args.putFloat(DRIVER_LOC_ARG, param1);
-        args.putFloat(PSNGR_PICK_UP_ARG, param2);
-        args.putFloat(PSNGR_DROP_OFF_ARG, param3);
+        args.putFloatArray(DRIVER_LOC_ARG, param1);
         fragment.setArguments(args);
         return fragment;
     }
@@ -59,9 +57,17 @@ public class DriverHomeFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getFloat(DRIVER_LOC_ARG);
-            mParam2 = getArguments().getFloat(PSNGR_PICK_UP_ARG);
-            mParam3 = getArguments().getFloat(PSNGR_DROP_OFF_ARG);
+            mParam1 = getArguments().getFloatArray(DRIVER_LOC_ARG);
+            this.getMapAsync(new OnMapReadyCallback() {
+                @Override
+                public void onMapReady(GoogleMap googleMap) {
+                    map = googleMap;
+                    LatLng location = new LatLng(mParam1[0], mParam1[1]);
+                    CameraUpdate update = CameraUpdateFactory.newLatLngZoom(location,12);
+                    map.moveCamera(update);
+
+                }
+            });
         }
     }
 

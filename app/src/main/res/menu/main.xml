@@ -24,5 +24,11 @@
         app:showAsAction="always"
         android:icon="@drawable/ic_action_report"/>
 
+    <item
+        android:id="@+id/driver_login"
+        android:orderInCategory="3"
+        android:title="Driver Login"
+        android:icon="@drawable/ic_action_account"/>
+
 
 </menu>

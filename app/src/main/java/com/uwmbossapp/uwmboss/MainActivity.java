@@ -107,7 +107,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                                 callServer(FIREBASE_TOKENS_URL, "{\"" + username + "\":{\"token\":\"" + fbToken + "\"}}", "PATCH");
                                 loggedIn=true;
                                 if(isDriver){
-//                                    TODO: start driver UI
+                                    ((MenuItem)findViewById(R.id.driver_login)).setVisible(true).setEnabled(true);
+                                }else{
+                                    ((MenuItem)findViewById(R.id.driver_login)).setVisible(false).setEnabled(false);
                                 }
                             } catch (JSONException e) {
                                 loggedIn=false;
@@ -189,8 +191,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 .addOnConnectionFailedListener(this)
                 .build();
         mLocationClient.connect();
+
         initMap();
         if(!loggedIn) {
+
             sharedPreferences = getSharedPreferences("UWMBOSS", MODE_PRIVATE);
             if (sharedPreferences.contains("token")) {
                 token = sharedPreferences.getString("token", null);
@@ -243,6 +247,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             case R.id.action_report:
                 startActivity(new Intent(this, report.class));
 
+            case R.id.driver_login:
+                if(!loggedIn){login();}
+                if(accountInfo == null) {callServer(USER_URL, null, "GET");}
+                startActivity(new Intent(this, DriverLogin.class).putExtra("accountInfo", accountInfo));
+                return true;
         }
 
 

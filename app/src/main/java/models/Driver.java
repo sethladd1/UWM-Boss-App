@@ -2,6 +2,11 @@ package models;
 
 import android.content.SharedPreferences;
 import android.location.Geocoder;
+import android.os.AsyncTask;
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import com.google.android.gms.maps.model.LatLng;
 
 import java.util.Map;
 
@@ -13,13 +18,21 @@ public class Driver {
     private String username;
     private int user_id;
     private int van_id;
-    private String name;
-    private Geocoder location;
+    private LatLng location;
 
-    public Driver(SharedPreferences sp){
-        Map<String, ?> map = sp.getAll();
-        username = (String) map.get("username");
-        van_id = (int) map.get("van_id");
-
+    /**
+     *
+     * @param username
+     * @param user_id
+     * @param van_id
+     */
+    public Driver(String un, int uid, int vid){
+            username = un;
+            user_id = uid;
+            van_id = vid;
     }
+
+
+
+
 }
