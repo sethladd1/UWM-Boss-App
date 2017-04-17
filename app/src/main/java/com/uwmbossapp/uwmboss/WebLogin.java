@@ -49,7 +49,6 @@ public class WebLogin extends AppCompatActivity{
                 if(url.trim().equals("https://uwm-boss.com/saml/acs")){
                     successfulAuthentication();
                 }
-                Log.i(TAG, "onPageFinished: "+ url);
             }
 
 
@@ -63,7 +62,6 @@ public class WebLogin extends AppCompatActivity{
         CookieManager cookieManager = CookieManager.getInstance();
         String cookies = cookieManager.getCookie(url);
         String cookieValue = null;
-        Log.i(TAG, "getCookie: " + cookies);
         if(cookies !=null) {
             String[] temp = cookies.split(";");
             for (String ar1 : temp) {

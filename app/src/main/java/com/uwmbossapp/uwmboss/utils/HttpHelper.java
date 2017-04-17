@@ -16,6 +16,7 @@ package com.uwmbossapp.uwmboss.utils;
         import java.net.HttpURLConnection;
         import java.net.URL;
         import java.util.List;
+        import java.util.Map;
 
         import javax.net.ssl.HttpsURLConnection;
 
@@ -32,36 +33,7 @@ public class HttpHelper {
      * @throws IOException
      */
        private static String TAG = "HttpHelper";
-//    public static String downloadUrl(String address) throws IOException {
-//
-//        InputStream is = null;
-//        try {
-//
-//            URL url = new URL(address);
-//            HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
-//            conn.setReadTimeout(10000);
-//            conn.setConnectTimeout(15000);
-//            conn.setRequestMethod("GET");
-//            conn.setDoInput(true);
-//            conn.connect();
-//
-//            int responseCode = conn.getResponseCode();
-//            if (responseCode != 200) {
-//                throw new IOException("Got response code " + responseCode);
-//            }
-//            is = conn.getInputStream();
-//            return readStream(is);
-//
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        } finally {
-//            if (is != null) {
-//                is.close();
-//            }
-//        }
-//        return null;
-//    }
-//    TODO: make this adaptable for all request types
+
     public static String makeHTTPRequest(String address, String message, String requestType) throws IOException {
 
         InputStream is = null;
@@ -75,21 +47,25 @@ public class HttpHelper {
             conn.setConnectTimeout(15000);
             requestType = requestType.trim();
             conn.setRequestMethod(requestType.toUpperCase());
+
             conn.setDoInput(true);
             if(requestType.equalsIgnoreCase("post") || requestType.equalsIgnoreCase("put") || requestType.equalsIgnoreCase("patch")) {
                 conn.setDoOutput(true);
+                conn.setRequestProperty("Content-Type", "application/json");
+
                 OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream());
                 writer.write(message);
                 writer.flush();
                 writer.close();
             }
+
             conn.connect();
 
             int responseCode = conn.getResponseCode();
+
             Log.i(TAG, "postToUrl: " +responseCode);
             if (responseCode != 200) {
                 throw new IOException("Got response code " + responseCode);
-
             }
             is = conn.getInputStream();
             return readStream(is);
