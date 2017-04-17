@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             REQUEST_RIDE_URL = "https://uwm-boss.com/admin/rides", COOKIES="https://uwm-boss.com/cookies";
     //    append username+".json" to this url when calling
     private static final String FIREBASE_USER_URL = "https://boss-30632.firebaseio.com/tokens/";
-    private final int WEBLOGINID = 0, ACCOUNTACTIVITYID = 1, SETCURLOCPERMISSION = 55, SETDESTTOCURLOC=56;
+    private final int WEBLOGINID = 0, ACCOUNTACTIVITYID = 1, REPORTACTIVITYID=3, SETCURLOCPERMISSION = 55, SETDESTTOCURLOC=56;
     private SharedPreferences sharedPreferences;
     private String token;
     private static final String TAG = "Main";
@@ -77,10 +77,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private Marker destMarker, pickupMarker;
     private GoogleMap mMap;
     private LatLng dest, pickup;
+    PlaceAutocompleteFragment autocompleteFragmentDest, autocompleteFragmentPickup;
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String url = intent.getStringExtra("url");
+
             String message = intent.getStringExtra(MyService.MY_SERVICE_PAYLOAD);
             switch (url) {
                 case USER_URL:
@@ -119,6 +121,20 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         }
                     }
                     break;
+                case REQUEST_RIDE_URL:
+                    if(intent.getBooleanExtra("success", false)){
+                        Toast.makeText(MainActivity.this, "Ride request sent and received.", Toast.LENGTH_SHORT).show();
+                        dest = null;
+                        pickup = null;
+                        autocompleteFragmentDest.setText("");
+                        autocompleteFragmentPickup.setText("");
+                        Intent reportIntent =  new Intent(MainActivity.this, report.class);
+                        reportIntent.putExtra("waitingForRide", true);
+                        startActivityForResult(reportIntent, REPORTACTIVITYID);
+                    }
+                    else{
+                        Toast.makeText(MainActivity.this, "Error: " + intent.getStringExtra("errorMessage"), Toast.LENGTH_SHORT).show();
+                    }
                 case COOKIES:
                     Log.i(TAG, "onReceive: cookies " +message);
             }
@@ -132,7 +148,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        PlaceAutocompleteFragment autocompleteFragmentDest = (PlaceAutocompleteFragment)
+        autocompleteFragmentDest = (PlaceAutocompleteFragment)
                 getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment_dest);
         autocompleteFragmentDest.setHint("Where to?");
         LatLngBounds latLngBounds = new LatLngBounds(new LatLng(43.052134, -87.915197), new LatLng(43.089497, -87.868272));
@@ -159,7 +175,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 Log.i(TAG, "An error occurred: " + status);
             }
         });
-        PlaceAutocompleteFragment autocompleteFragmentPickup = (PlaceAutocompleteFragment)
+        autocompleteFragmentPickup = (PlaceAutocompleteFragment)
                 getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment_pick_up);
         autocompleteFragmentPickup.setHint("Pick Up (default: your location)");
         autocompleteFragmentPickup.setBoundsBias(latLngBounds);
@@ -340,6 +356,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     }
                 }
                 return;
+            case REPORTACTIVITYID:
+                if(resultCode == Activity.RESULT_OK){
+                    if(data.getBooleanExtra("rideCancelled", false)){
+                        Toast.makeText(this, "Ride cancelled", Toast.LENGTH_SHORT).show();
+                    }
+                }
             default:
                 break;
 
@@ -492,6 +514,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     +",\"picklong\":"+new Double(pickup.longitude)
                     +",\"destlat\":"+new Double(dest.latitude)
                     +",\"destlong\":"+new Double(dest.longitude)+"}";
+
             callServer(REQUEST_RIDE_URL, json, "POST");
 
         }

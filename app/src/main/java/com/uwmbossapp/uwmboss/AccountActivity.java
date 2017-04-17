@@ -3,7 +3,6 @@ package com.uwmbossapp.uwmboss;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -14,6 +13,7 @@ public class AccountActivity extends AppCompatActivity {
     private TextView user;
     private TextView accountType;
     private static final String TAG = "AccountActivity";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -25,7 +25,7 @@ public class AccountActivity extends AppCompatActivity {
             JSONObject jsonObject = new JSONObject(accountInfo);
             String email = jsonObject.getString("email");
             boolean driver = jsonObject.getBoolean("is_driver");
-            if(email != null) {
+            if (email != null) {
                 String[] arr = email.split("@");
                 if (arr.length > 0) {
                     user.setText("Logged in as " + arr[0]);
@@ -42,7 +42,8 @@ public class AccountActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
-    public void logOut(View v){
+
+    public void logOut(View v) {
         Intent resultIntent = new Intent();
         resultIntent.putExtra("logout", true);
         setResult(RESULT_OK, resultIntent);
