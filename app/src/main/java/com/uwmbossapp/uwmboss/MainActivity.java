@@ -85,7 +85,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             String message = intent.getStringExtra(MyService.MY_SERVICE_PAYLOAD);
             switch (url) {
                 case USER_URL:
-                    Log.i(TAG, "onReceive: "+ message);
                     if (message == null) {
                         Toast.makeText(MainActivity.this, "Unable to connect to UWM BOSS server. We're sorry.", Toast.LENGTH_LONG).show();
                         loggedIn = false;
@@ -113,7 +112,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                                 }
                             } catch (JSONException e) {
                                 loggedIn=false;
-                                Log.i(TAG, "onReceive: " + e.getMessage());
                                 e.printStackTrace();
                             }
 
@@ -301,9 +299,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
         try {
             if(tokenCookie != null){
-                Log.i(TAG, "removing cookie " + tokenCookie.toString());
-                cookieManager.getCookieStore().remove(new URI("uwm-boss.com"), tokenCookie);
-
+                boolean b = cookieManager.getCookieStore().remove(new URI("uwm-boss.com"), tokenCookie);
             }
             tokenCookie = new HttpCookie("token", value);
             tokenCookie.setPath("/");
@@ -311,7 +307,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             tokenCookie.setVersion(0);
             cookieManager.getCookieStore().add(new URI("uwm-boss.com"), tokenCookie);
         } catch (URISyntaxException e) {
-            Log.i(TAG, "cookie exception " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -323,23 +318,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             case WEBLOGINID:
                 if (resultCode == Activity.RESULT_OK) {
                     token = data.getStringExtra("token");
-                    Log.i(TAG, "onActivityResult: token=" +token);
                     if (token != null) {
                         storeTokenCookie(token);
                         SharedPreferences.Editor editor = sharedPreferences.edit();
                         editor.putString("token", token);
                         editor.apply();
                         loggedIn = true;
-
-                        try {
-                            List<HttpCookie> cookies = ((CookieManager)CookieHandler.getDefault()).getCookieStore().get(new URI("uwm-boss.com"));
-                            for(HttpCookie c: cookies){
-                                Log.i(TAG, "cookies in cookie store: " + c.toString());
-                            }
-                        } catch (URISyntaxException e) {
-                            e.printStackTrace();
-                        }
-                        callServer(COOKIES, null, "GET");
                         callServer(USER_URL, null, "GET");
                     }
                 } else {
@@ -522,8 +506,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     return;
                 }
             }
-            Log.i(TAG, "getRide: pickup=" +pickup);
-            Log.i(TAG, "getRide: dest" +dest);
             String json = "{\"picklat\":"+new Double(pickup.latitude)
                     +",\"picklong\":"+new Double(pickup.longitude)
                     +",\"destlat\":"+new Double(dest.latitude)
