@@ -46,6 +46,7 @@ public class MyService extends IntentService {
         messageIntent.putExtra("url", uri.toString());
         messageIntent.putExtra("success", success);
         messageIntent.putExtra("errorMessage", errorMessage);
+        messageIntent.putExtra("requestType", type);
 
 
         LocalBroadcastManager manager =
