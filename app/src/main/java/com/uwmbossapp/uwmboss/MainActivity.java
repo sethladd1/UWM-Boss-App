@@ -59,6 +59,8 @@ import java.net.HttpCookie;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import models.User;
+
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     private static final String USER_URL = "https://uwm-boss.com/admin/users/show",
@@ -66,7 +68,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             REQUEST_RIDE_URL = "https://uwm-boss.com/admin/rides", COOKIES="https://uwm-boss.com/cookies";
     //    append username+".json" to this url when calling
     private static final String FIREBASE_USER_URL = "https://boss-30632.firebaseio.com/tokens/";
-    private final int WEBLOGINID = 0, ACCOUNTACTIVITYID = 1, REPORTACTIVITYID=3, SETCURLOCPERMISSION = 55, SETDESTTOCURLOC=56;
+    private final int WEBLOGINID = 0, ACCOUNTACTIVITYID = 1, REPORTACTIVITYID=3, SETCURLOCPERMISSION = 55, SETDESTTOCURLOC=56, GET_LOCATION_PERMISSION = 57;
     private SharedPreferences sharedPreferences;
     private String token;
     private static final String TAG = "Main";
@@ -77,6 +79,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private Marker destMarker, pickupMarker;
     private GoogleMap mMap;
     private LatLng dest, pickup;
+
+    private User user;
+    private Location location;
+
     PlaceAutocompleteFragment autocompleteFragmentDest, autocompleteFragmentPickup;
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
@@ -108,6 +114,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                                 String fbToken = FirebaseInstanceId.getInstance().getToken();
                                 callServer(FIREBASE_TOKENS_URL, "{\"" + username + "\":{\"token\":\"" + fbToken + "\"}}", "PATCH");
                                 loggedIn=true;
+                                user = User.fromJSON(accountInfo);
                                 if(isDriver){
                                     ((MenuItem)findViewById(R.id.driver_login)).setVisible(true).setEnabled(true);
                                 }else{
@@ -266,12 +273,31 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             case R.id.driver_login:
                 if(!loggedIn){login();}
                 if(accountInfo == null) {callServer(USER_URL, null, "GET");}
-                startActivity(new Intent(this, DriverLogin.class).putExtra("accountInfo", accountInfo));
+
+                else {
+                    if(location == null)
+                        setCurrentLocation();
+                    startActivity(new Intent(this, DriverLogin.class).putExtra("user", user).putExtra("location", location));
+                }
                 return true;
         }
 
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void setCurrentLocation(){
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            if(ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
+                location = LocationServices.FusedLocationApi.getLastLocation(mLocationClient);
+
+            }else if(ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED){
+                location = LocationServices.FusedLocationApi.getLastLocation(mLocationClient);
+
+            }else{
+                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, GET_LOCATION_PERMISSION);
+            }
+        }
     }
 
     private void login() {
@@ -481,6 +507,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
             else if(requestCode==SETDESTTOCURLOC){
                 getRide(null);
+            }
+            else if(requestCode==GET_LOCATION_PERMISSION){
+                setCurrentLocation();
             }
         }
 
