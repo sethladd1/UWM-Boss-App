@@ -3,7 +3,6 @@ package com.uwmbossapp.uwmboss;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -28,7 +27,6 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationServices;
@@ -44,7 +42,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.uwmbossapp.uwmboss.services.MyFirebaseInstanceIDService;
@@ -53,11 +50,13 @@ import com.uwmbossapp.uwmboss.services.MyService;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.HttpCookie;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 
 import models.User;
 
@@ -96,7 +95,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         Toast.makeText(MainActivity.this, "Unable to connect to UWM BOSS server. We're sorry.", Toast.LENGTH_LONG).show();
                         loggedIn = false;
                     } else {
-                        if (message.trim().equals("null")) {
+                        if (message.trim().equals("null") || message.trim().equals("You must login first")) {
                             loggedIn=false;
                             login();
                         } else {
@@ -130,20 +129,22 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     break;
                 case REQUEST_RIDE_URL:
                     if(intent.getBooleanExtra("success", false)){
-                        Toast.makeText(MainActivity.this, "Ride request sent and received.", Toast.LENGTH_SHORT).show();
-                        dest = null;
-                        pickup = null;
-                        autocompleteFragmentDest.setText("");
-                        autocompleteFragmentPickup.setText("");
-                        Intent reportIntent =  new Intent(MainActivity.this, report.class);
-                        reportIntent.putExtra("waitingForRide", true);
-                        startActivityForResult(reportIntent, REPORTACTIVITYID);
+                        if(!intent.getStringExtra("requestType").equalsIgnoreCase("delete")) {
+                            Toast.makeText(MainActivity.this, "Ride request sent and received.", Toast.LENGTH_SHORT).show();
+                            dest = null;
+                            pickup = null;
+                            autocompleteFragmentDest.setText("");
+                            autocompleteFragmentPickup.setText("");
+                            Intent reportIntent = new Intent(MainActivity.this, report.class);
+                            reportIntent.putExtra("waitingForRide", true);
+                            startActivityForResult(reportIntent, REPORTACTIVITYID);
+                        }
                     }
                     else{
                         Toast.makeText(MainActivity.this, "Error: " + intent.getStringExtra("errorMessage"), Toast.LENGTH_SHORT).show();
                     }
                 case COOKIES:
-                    Log.i(TAG, "onReceive: cookies " +message);
+                    Log.i(TAG, "Cookies server saw:" +message);
             }
 
         }
@@ -224,7 +225,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 username = sharedPreferences.getString("username", null);
                 if (token != null && username != null) {
                     loggedIn = true;
-                    storeCookie("https://uwm-boss.com", "token", token);
+                    storeTokenCookie(token);
+
                     callServer(USER_URL, null, "GET");
                 }
             }
@@ -321,18 +323,24 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
-    private void storeCookie(String url, String name, String value) {
-        tokenCookie = new HttpCookie(name, value);
-        tokenCookie.setPath("/");
-        tokenCookie.setDomain(url);
-        tokenCookie.setVersion(0);
+    private void storeTokenCookie(String value) {
+
+
+
         CookieManager cookieManager = (CookieManager) CookieHandler.getDefault();
         if (cookieManager == null) {
             CookieHandler.setDefault(new CookieManager());
             cookieManager = (CookieManager) CookieHandler.getDefault();
         }
         try {
-            cookieManager.getCookieStore().add(new URI(url), tokenCookie);
+            if(tokenCookie != null){
+                boolean b = cookieManager.getCookieStore().remove(new URI("uwm-boss.com"), tokenCookie);
+            }
+            tokenCookie = new HttpCookie("token", value);
+            tokenCookie.setPath("/");
+            tokenCookie.setDomain("uwm-boss.com");
+            tokenCookie.setVersion(0);
+            cookieManager.getCookieStore().add(new URI("uwm-boss.com"), tokenCookie);
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
@@ -345,9 +353,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             case WEBLOGINID:
                 if (resultCode == Activity.RESULT_OK) {
                     token = data.getStringExtra("token");
-                    Log.i(TAG, "onActivityResult: token=" +token);
                     if (token != null) {
-                        storeCookie("uwm-boss.com", "token", token);
+                        storeTokenCookie(token);
                         SharedPreferences.Editor editor = sharedPreferences.edit();
                         editor.putString("token", token);
                         editor.apply();
@@ -386,6 +393,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 if(resultCode == Activity.RESULT_OK){
                     if(data.getBooleanExtra("rideCancelled", false)){
                         Toast.makeText(this, "Ride cancelled", Toast.LENGTH_SHORT).show();
+                        callServer(REQUEST_RIDE_URL, null, "DELETE");
                     }
                 }
             default:
@@ -404,7 +412,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 @Override
                 public void onMapReady(GoogleMap googleMap) {
                     mMap = googleMap;
-                    Log.i(TAG, "onMapReady: mMap set");
 //                    coordinates of UWM
                     LatLng uwmLatLng = new LatLng(43.078252, -87.881995);
                     CameraUpdate update = CameraUpdateFactory.newLatLngZoom(uwmLatLng, 12);
@@ -537,8 +544,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     return;
                 }
             }
-            Log.i(TAG, "getRide: pickup=" +pickup);
-            Log.i(TAG, "getRide: dest" +dest);
             String json = "{\"picklat\":"+new Double(pickup.latitude)
                     +",\"picklong\":"+new Double(pickup.longitude)
                     +",\"destlat\":"+new Double(dest.latitude)

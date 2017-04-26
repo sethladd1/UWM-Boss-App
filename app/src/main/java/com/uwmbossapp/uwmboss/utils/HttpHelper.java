@@ -38,9 +38,6 @@ public class HttpHelper {
 
         InputStream is = null;
         try {
-            Log.i(TAG, "makeHTTPRequest: msg=" + message);
-            Log.i(TAG, "makeHTTPRequest: url=" +address);
-
             URL url = new URL(address);
             HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
             conn.setReadTimeout(10000);
