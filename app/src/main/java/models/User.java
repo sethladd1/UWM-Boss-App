@@ -10,7 +10,7 @@ import com.google.gson.GsonBuilder;
  */
 
 public class User implements Parcelable{
-    private static final Parcelable.Creator<User> CREATOR = new Parcelable.Creator<User>(){
+    public static final Parcelable.Creator<User> CREATOR = new Parcelable.Creator<User>(){
 
         @Override
         public User createFromParcel(Parcel source) {
@@ -30,8 +30,11 @@ public class User implements Parcelable{
     private User(Parcel in){
         user_id = in.readInt();
         user_name = in.readString();
-        is_driver = (boolean) in.readValue(boolean.class.getClassLoader());
-        is_admin = (boolean) in.readValue(boolean.class.getClassLoader());
+        token = in.readString();
+        boolean[] bool_array = new boolean[2];
+        in.readBooleanArray(bool_array);
+        is_driver = bool_array[0];
+        is_admin = bool_array[1];
     }
     @Override
     public int describeContents() {
@@ -43,8 +46,8 @@ public class User implements Parcelable{
         dest.writeInt(user_id);
         dest.writeString(user_name);
         dest.writeString(token);
-        dest.writeValue(is_driver);
-        dest.writeValue(is_admin);
+        dest.writeBooleanArray(new boolean[]{is_driver, is_admin});
+
     }
 
     public User(String user_name, String token, boolean is_driver, boolean is_admin) {

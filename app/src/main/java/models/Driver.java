@@ -18,13 +18,13 @@ import java.util.Map;
  */
 
 public class Driver implements Parcelable {
-    String username;
-    int user_id;
-    int van_id;
-    @SerializedName("lat")  float loclat;
-    @SerializedName("long")  float loclong;
-    boolean isAvailable;
-    static final Parcelable.Creator<Driver> CREATOR = new Parcelable.Creator<Driver>(){
+    public String username;
+    public int user_id;
+    public int van_id;
+    @SerializedName("lat") public float loclat;
+    @SerializedName("long") public float loclong;
+    public boolean isAvailable;
+    public static final Parcelable.Creator<Driver> CREATOR = new Parcelable.Creator<Driver>(){
 
         @Override
         public Driver createFromParcel(Parcel source) {

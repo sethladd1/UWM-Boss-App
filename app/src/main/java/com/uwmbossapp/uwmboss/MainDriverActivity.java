@@ -1,18 +1,14 @@
 package com.uwmbossapp.uwmboss;
 
-import android.*;
 import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -25,23 +21,18 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.WebView;
+import android.webkit.WebViewFragment;
 import android.widget.Button;
 import android.widget.FrameLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
 import com.google.gson.JsonParseException;
 import com.uwmbossapp.uwmboss.services.MyService;
 
@@ -64,52 +55,51 @@ public class MainDriverActivity extends AppCompatActivity
     private Fragment frag_view;
     private Location location;
     private static final int GET_LOC_PERMISSION = 25;
-    private GoogleApiClient apiclient;
     private Button availability_button;
     private Button cancel_ride_button;
     private Ride ride;
     private Driver driver;
+    private FrameLayout frag_container;
     private GoogleApiClient api_client;
+    private BottomNavigationView bottom_navigation_view;
 
 
-    private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
-            = new BottomNavigationView.OnNavigationItemSelectedListener() {
 
-        @Override
-        public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-            switch (item.getItemId()) {
-                case R.id.driver_home:
-                    frag_view = DriverHomeFragment.newInstance(createLocationParams());
-                    break;
-                case R.id.driver_dashboard:
-                    frag_view = DriverDashBoard.newInstance();
-                    break;
-                case R.id.driver_queue_table:
-                    frag_view = PassengerQueueTableFragment.newInstance(0);
-                    break;
-            }
-            final FragmentTransaction transaction = fragment_manager.beginTransaction();
-            transaction.replace(R.id.driver_navigation_container, frag_view).commit();
-            return true;
-        }
 
-    };
-
-    private final LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
     private static final float CITY_BLOCK = 274.32f;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_driver);
-
-        driver = getIntent().getExtras().getParcelable("driver");
-        POST_Driver(driver);
         fragment_manager = getSupportFragmentManager();
-        location = getDeviceLocation();
         buildGoogleApiClient();
-        BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
-        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+        driver = getIntent().getExtras().getParcelable("driver");
+        location = getDeviceLocation();
+        frag_container = (FrameLayout) findViewById(R.id.driver_navigation_container);
+        BottomNavigationView bottom_navigation_view = (BottomNavigationView) findViewById(R.id.navigation);
+        bottom_navigation_view.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener(){
+
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.driver_home:
+                        frag_view = DriverHomeFragment.newInstance(createLocationParams());
+                        break;
+                    case R.id.driver_dashboard:
+                        frag_view = DriverDashBoard.newInstance();
+                        break;
+                    case R.id.driver_queue_table:
+                        frag_view = PassengerQueueTableFragment.newInstance(0);
+                        break;
+                    default:
+                        return false;
+                }
+                final FragmentTransaction transaction = fragment_manager.beginTransaction();
+                transaction.replace(frag_container.getId(), frag_view).commit();
+                return true;
+            }
+        });
         cancel_ride_button = (Button) findViewById(R.id.driver_cancel_ride);
         cancel_ride_button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -133,6 +123,17 @@ public class MainDriverActivity extends AppCompatActivity
         });
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(new DriverBroadcastReceiver(), new IntentFilter(MyService.MY_SERVICE_MESSAGE));
     }
+    private void startMapNavigation(){
+        if(ride != null&&driver!=null){
+            String saddr = "saddr=";
+            String daddr = "daddr=";
+            String googleMapsNavigationURL = "https://maps.google.com/maps?";
+            googleMapsNavigationURL+=saddr+""+driver.loclat+","+driver.loclong+"&"+daddr+""+ride.picklat+","+ride.picklong+"";
+            WebViewFragment web_frag = new WebViewFragment();
+            web_frag.getWebView().loadUrl(googleMapsNavigationURL);
+        }
+
+    }
 
     private void checkLocationPermissions() {
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -146,13 +147,13 @@ public class MainDriverActivity extends AppCompatActivity
         Location loc = null;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                loc = manager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                loc = LocationServices.FusedLocationApi.getLastLocation(api_client);
             } else {
                 //Toast.makeText(this, "unable to get your location", Toast.LENGTH_SHORT).show();
                 checkLocationPermissions();
             }
         } else {
-            loc = manager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            loc = LocationServices.FusedLocationApi.getLastLocation(api_client);
         }
         return loc;
     }

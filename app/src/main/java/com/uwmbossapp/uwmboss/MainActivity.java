@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private Marker destMarker, pickupMarker;
     private GoogleMap mMap;
     private LatLng dest, pickup;
-
+    private MenuItem driver_login;
     private User user;
     private Location location;
 
@@ -114,11 +114,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                                 callServer(FIREBASE_TOKENS_URL, "{\"" + username + "\":{\"token\":\"" + fbToken + "\"}}", "PATCH");
                                 loggedIn=true;
                                 user = User.fromJSON(accountInfo);
-                                if(isDriver){
-                                    ((MenuItem)findViewById(R.id.driver_login)).setVisible(true).setEnabled(true);
-                                }else{
-                                    ((MenuItem)findViewById(R.id.driver_login)).setVisible(false).setEnabled(false);
+                                if(driver_login != null){
+                                    if(user.is_driver){
+                                        driver_login.setVisible(true).setEnabled(true);
+                                    }else{
+                                        driver_login.setVisible(false).setEnabled(false);
+                                    }
                                 }
+
                             } catch (JSONException e) {
                                 loggedIn=false;
                                 e.printStackTrace();
@@ -156,6 +159,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        driver_login = (MenuItem)findViewById(R.id.driver_login);
+
         autocompleteFragmentDest = (PlaceAutocompleteFragment)
                 getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment_dest);
         autocompleteFragmentDest.setHint("Where to?");

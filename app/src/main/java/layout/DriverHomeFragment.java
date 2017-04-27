@@ -61,7 +61,6 @@ public class DriverHomeFragment extends SupportMapFragment
     private float[] mParam1;
     private GoogleMap map;
     private OnDriverPairedListener mListener;
-    private LocationManager loc_manager;
     private static final int GET_LOC_PERMISSION = 25;
     private GoogleApiClient api_client;
 
@@ -89,11 +88,10 @@ public class DriverHomeFragment extends SupportMapFragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        loc_manager = ( LocationManager) this.getActivity().getSystemService(LOCATION_SERVICE);
         if (getArguments() != null) {
             mParam1 = getArguments().getFloatArray(DRIVER_LOC_ARG);
-            this.getMapAsync(this);
         }
+        this.getMapAsync(this);
     }
 
 //    @Override
@@ -101,11 +99,11 @@ public class DriverHomeFragment extends SupportMapFragment
 //        //TODO figure out how to make this function work in this class,
 //        //TODO or add specific request code to MainDriverActivity
 //    }
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_driver_home, container, false);
-    }
+//    @Override
+//    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+//                             Bundle savedInstanceState) {
+//        return inflater.inflate(R.layout.fragment_driver_home, container, false);
+//    }
 
 
     @Override
@@ -149,6 +147,12 @@ public class DriverHomeFragment extends SupportMapFragment
             map.setMyLocationEnabled(true);
             buildGoogleApiClient();
         }
+        MarkerOptions marker_options = new MarkerOptions();
+        marker_options.position(location);
+        marker_options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
+        map.addMarker(marker_options);
+        map.animateCamera(CameraUpdateFactory.newLatLngZoom(location, 12));
+
 
     }
 
@@ -175,6 +179,7 @@ public class DriverHomeFragment extends SupportMapFragment
 
     @Override
     public void onLocationChanged(Location location) {
+        map.clear();
         LatLng ltlng = new LatLng(location.getLatitude(), location.getLongitude());
         MarkerOptions marker_options = new MarkerOptions();
         marker_options.position(ltlng);

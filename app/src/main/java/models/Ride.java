@@ -9,8 +9,8 @@ import com.google.gson.GsonBuilder;
 
 public class Ride {
 
-    int user_id, driver_id;
-    float picklat, picklong, destlat, destlong;
+    public int user_id, driver_id;
+    public float picklat, picklong, destlat, destlong;
 
     public Ride(int user_id, int driver_id, float plat, float plong, float dlat, float dlong){
         this.user_id = user_id;
