@@ -59,6 +59,10 @@
             android:name=".MainDriverActivity"
             android:label="@string/title_activity_main_driver" />
         <activity android:name=".DriverLogin"></activity>
+
+        <activity android:name=".RateDriverActivity" />
+
+        <activity android:name=".InfoActivity"></activity>
     </application>
 
 </manifest>

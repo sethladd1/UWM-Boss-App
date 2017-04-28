@@ -3,8 +3,11 @@ package com.uwmbossapp.uwmboss;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -17,18 +20,24 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
@@ -47,7 +56,7 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import com.uwmbossapp.uwmboss.services.MyFirebaseInstanceIDService;
 import com.uwmbossapp.uwmboss.services.MyFirebaseMessagingService;
 import com.uwmbossapp.uwmboss.services.MyService;
-
+import java.lang.Math;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -56,19 +65,21 @@ import java.net.CookieManager;
 import java.net.HttpCookie;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
+
+import static com.uwmbossapp.uwmboss.R.mipmap.ic_launcher;
 
 import models.User;
 
 
-public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
     private static final String USER_URL = "https://uwm-boss.com/admin/users/show",
             FIREBASE_TOKENS_URL = "https://boss-30632.firebaseio.com/tokens.json",
-            REQUEST_RIDE_URL = "https://uwm-boss.com/admin/rides", COOKIES="https://uwm-boss.com/cookies";
+            REQUEST_RIDE_URL = "https://uwm-boss.com/admin/rides", COOKIES = "https://uwm-boss.com/cookies";
     //    append username+".json" to this url when calling
     private static final int DRIVER_LOGIN = 25;
     private static final String FIREBASE_USER_URL = "https://boss-30632.firebaseio.com/tokens/";
-    private final int WEBLOGINID = 0, ACCOUNTACTIVITYID = 1, REPORTACTIVITYID=3, SETCURLOCPERMISSION = 55, SETDESTTOCURLOC=56, GET_LOCATION_PERMISSION = 57;
+    private static final float CITY_BLOCK = 274.32f;
+    private final int WEBLOGINID = 0, ACCOUNTACTIVITYID = 1, REPORTACTIVITYID = 3, RATINGDIALOGID=4, SETCURLOCPERMISSION = 55, SETDESTTOCURLOC = 56, GET_LOCATION_PERMISSION = 57;
     private SharedPreferences sharedPreferences;
     private String token;
     private static final String TAG = "Main";
@@ -84,6 +95,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private Location location;
     private Menu menu;
 
+    private Button button;
+    boolean rideRequestSent;
     PlaceAutocompleteFragment autocompleteFragmentDest, autocompleteFragmentPickup;
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
@@ -91,6 +104,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             String url = intent.getStringExtra("url");
 
             String message = intent.getStringExtra(MyService.MY_SERVICE_PAYLOAD);
+            Log.i(TAG, "onReceive: "+url);
+            Log.i(TAG, "onReceive: " +message);
+            Log.i(TAG, "onReceive: token=" + token);
             switch (url) {
                 case USER_URL:
                     if (message == null) {
@@ -98,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         loggedIn = false;
                     } else {
                         if (message.trim().equals("null") || message.trim().equals("You must login first")) {
-                            loggedIn=false;
+                            loggedIn = false;
                             login();
                         } else {
                             accountInfo = message;
@@ -119,7 +135,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                                 invalidateOptionsMenu();
 
                             } catch (JSONException e) {
-                                loggedIn=false;
+                                Log.i(TAG, "JSON exception: " + e.getMessage());
+                                loggedIn = false;
                                 e.printStackTrace();
                             }
 
@@ -127,23 +144,31 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     }
                     break;
                 case REQUEST_RIDE_URL:
-                    if(intent.getBooleanExtra("success", false)){
-                        if(!intent.getStringExtra("requestType").equalsIgnoreCase("delete")) {
+                    if (intent.getBooleanExtra("success", false)) {
+                        if (!intent.getStringExtra("requestType").equalsIgnoreCase("delete")) {
                             Toast.makeText(MainActivity.this, "Ride request sent and received.", Toast.LENGTH_SHORT).show();
-                            dest = null;
-                            pickup = null;
-                            autocompleteFragmentDest.setText("");
-                            autocompleteFragmentPickup.setText("");
-                            Intent reportIntent = new Intent(MainActivity.this, report.class);
-                            reportIntent.putExtra("waitingForRide", true);
-                            startActivityForResult(reportIntent, REPORTACTIVITYID);
+//                            Intent reportIntent = new Intent(MainActivity.this, report.class);
+//                            reportIntent.putExtra("waitingForRide", true);
+//                            startActivityForResult(reportIntent, REPORTACTIVITYID);
+                            button.setText(R.string.CancelRide);
+                            rideRequestSent = true;
+                            startCheckingLocation();
+
                         }
-                    }
-                    else{
+                        else{
+                            rideRequestSent=false;
+                            button.setText(R.string.GetRide);
+                            LocationServices.FusedLocationApi.removeLocationUpdates(mLocationClient, MainActivity.this);
+                            Toast.makeText(MainActivity.this, "Ride cancelled", Toast.LENGTH_SHORT).show();
+
+                        }
+                    } else {
                         Toast.makeText(MainActivity.this, "Error: " + intent.getStringExtra("errorMessage"), Toast.LENGTH_SHORT).show();
                     }
                 case COOKIES:
-                    Log.i(TAG, "Cookies server saw:" +message);
+                    Log.i(TAG, "Cookies server saw:" + message);
+                default:
+                    break;
             }
 
         }
@@ -152,11 +177,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.i(TAG, "onCreate: ");
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         driver_login = (MenuItem)findViewById(R.id.driver_login);
-
+        button = (Button) findViewById(R.id.button);
         autocompleteFragmentDest = (PlaceAutocompleteFragment)
                 getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment_dest);
         autocompleteFragmentDest.setHint("Where to?");
@@ -167,8 +193,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             public void onPlaceSelected(Place place) {
 
                 dest = place.getLatLng();
-                if(mMap != null){
-                    if(destMarker != null){
+                if (mMap != null) {
+                    if (destMarker != null) {
                         destMarker.remove();
                     }
                     MarkerOptions options = new MarkerOptions().title("Destination").position(dest);
@@ -192,12 +218,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             @Override
             public void onPlaceSelected(Place place) {
                 pickup = place.getLatLng();
-                if(mMap != null){
-                    if(pickupMarker!=null){
+                if (mMap != null) {
+                    if (pickupMarker != null) {
                         pickupMarker.remove();
                     }
                     MarkerOptions options = new MarkerOptions().title("Pick Up").position(pickup);
-                    pickupMarker =  mMap.addMarker(options);
+                    pickupMarker = mMap.addMarker(options);
                     CameraUpdate update = CameraUpdateFactory.newLatLngZoom(pickup, 15);
                     mMap.animateCamera(update);
                 }
@@ -218,8 +244,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mLocationClient.connect();
 
         initMap();
-        if(!loggedIn) {
 
+        if (!loggedIn) {
             sharedPreferences = getSharedPreferences("UWMBOSS", MODE_PRIVATE);
             if (sharedPreferences.contains("token")) {
                 token = sharedPreferences.getString("token", null);
@@ -235,6 +261,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 login();
             }
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.i(TAG, "onResume: ");
+
+
     }
 
     public void startFirebaseServices() {
@@ -345,14 +379,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private void storeTokenCookie(String value) {
 
 
-
         CookieManager cookieManager = (CookieManager) CookieHandler.getDefault();
         if (cookieManager == null) {
             CookieHandler.setDefault(new CookieManager());
             cookieManager = (CookieManager) CookieHandler.getDefault();
         }
         try {
-            if(tokenCookie != null){
+            if (tokenCookie != null) {
                 boolean b = cookieManager.getCookieStore().remove(new URI("uwm-boss.com"), tokenCookie);
             }
             tokenCookie = new HttpCookie("token", value);
@@ -409,9 +442,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 }
                 return;
             case REPORTACTIVITYID:
-                if(resultCode == Activity.RESULT_OK){
-                    if(data.getBooleanExtra("rideCancelled", false)){
-                        Toast.makeText(this, "Ride cancelled", Toast.LENGTH_SHORT).show();
+                if (resultCode == Activity.RESULT_OK) {
+                    if (data.getBooleanExtra("rideCancelled", false)) {
                         callServer(REQUEST_RIDE_URL, null, "DELETE");
                     }
                 }
@@ -421,7 +453,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         }
     }
-
 
 
     private void initMap() {
@@ -451,83 +482,84 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
-    private void drawBoundaries(){
+    private void drawBoundaries() {
         PolygonOptions boundaries = new PolygonOptions().fillColor(0x33FF0000).strokeWidth(3).strokeColor(Color.RED);
         LatLng[] boudaryCoordinates = new LatLng[55];
-        boudaryCoordinates[0]= new LatLng(43.088263,-87.873593);
-        boudaryCoordinates[1]= new LatLng(43.074698,-87.871937);
-        boudaryCoordinates[2]= new LatLng(43.074705,-87.869020);
-        boudaryCoordinates[3]= new LatLng(43.075332,-87.868946);
-        boudaryCoordinates[4]= new LatLng(43.075286,-87.868671);
-        boudaryCoordinates[5]= new LatLng(43.074651,-87.868844);
-        boudaryCoordinates[6]= new LatLng(43.074637,-87.869612);
-        boudaryCoordinates[7]= new LatLng(43.074386,-87.869631);
-        boudaryCoordinates[8]= new LatLng(43.074066,-87.868265);
-        boudaryCoordinates[9]= new LatLng(43.073422,-87.867828);
-        boudaryCoordinates[10]= new LatLng(43.071232,-87.867039);
-        boudaryCoordinates[11]= new LatLng(43.070425,-87.867044);
-        boudaryCoordinates[12]= new LatLng(43.068633,-87.867741);
-        boudaryCoordinates[13]= new LatLng(43.066314,-87.868182);
-        boudaryCoordinates[14]= new LatLng(43.065334,-87.868998);
-        boudaryCoordinates[15]= new LatLng(43.064330,-87.870903);
-        boudaryCoordinates[16]= new LatLng(43.061760,-87.874310);
-        boudaryCoordinates[17]= new LatLng(43.058519,-87.876437);
-        boudaryCoordinates[18]= new LatLng(43.054434,-87.881381);
-        boudaryCoordinates[19]= new LatLng(43.053636,-87.883302);
-        boudaryCoordinates[20]= new LatLng(43.053389,-87.885997);
-        boudaryCoordinates[21]= new LatLng(43.053416,-87.885964);
-        boudaryCoordinates[22]= new LatLng(43.054165,-87.886229);
-        boudaryCoordinates[23]= new LatLng(43.054521,-87.886243);
-        boudaryCoordinates[24]= new LatLng(43.054954,-87.886051);
-        boudaryCoordinates[25]= new LatLng(43.055190,-87.885831);
-        boudaryCoordinates[26]= new LatLng(43.055482,-87.885429);
-        boudaryCoordinates[27]= new LatLng(43.055640,-87.885392);
-        boudaryCoordinates[28]= new LatLng(43.055690,-87.886464);
-        boudaryCoordinates[29]= new LatLng(43.054085,-87.888060);
-        boudaryCoordinates[30]= new LatLng(43.054567,-87.889006);
-        boudaryCoordinates[31]= new LatLng(43.052278,-87.891162);
-        boudaryCoordinates[32]= new LatLng(43.052872,-87.892402);
-        boudaryCoordinates[33]= new LatLng(43.052976,-87.903339);
-        boudaryCoordinates[34]= new LatLng(43.053674,-87.903588);
-        boudaryCoordinates[35]= new LatLng(43.055129,-87.905110);
-        boudaryCoordinates[36]= new LatLng(43.054548,-87.906710);
-        boudaryCoordinates[37]= new LatLng(43.053577,-87.907846);
-        boudaryCoordinates[38]= new LatLng(43.052304,-87.909265);
-        boudaryCoordinates[39]= new LatLng(43.052431,-87.909756);
-        boudaryCoordinates[40]= new LatLng(43.052411,-87.914345);
-        boudaryCoordinates[41]= new LatLng(43.074754,-87.914012);
-        boudaryCoordinates[42]= new LatLng(43.076294,-87.914732);
-        boudaryCoordinates[43]= new LatLng(43.076438,-87.913894);
-        boudaryCoordinates[44]= new LatLng(43.076375,-87.913976);
-        boudaryCoordinates[45]= new LatLng(43.082105,-87.913761);
-        boudaryCoordinates[46]= new LatLng(43.082095,-87.907503);
-        boudaryCoordinates[47]= new LatLng(43.085711,-87.907417);
-        boudaryCoordinates[48]= new LatLng(43.085754,-87.908544);
-        boudaryCoordinates[49]= new LatLng(43.086995,-87.908563);
-        boudaryCoordinates[50]= new LatLng(43.087018,-87.910866);
-        boudaryCoordinates[51]= new LatLng(43.088165,-87.910858);
-        boudaryCoordinates[52]= new LatLng(43.088215,-87.912023);
-        boudaryCoordinates[53]= new LatLng(43.089377,-87.912003);
-        boudaryCoordinates[54]= new LatLng(43.089272,-87.873910);
+        boudaryCoordinates[0] = new LatLng(43.088263, -87.873593);
+        boudaryCoordinates[1] = new LatLng(43.074698, -87.871937);
+        boudaryCoordinates[2] = new LatLng(43.074705, -87.869020);
+        boudaryCoordinates[3] = new LatLng(43.075332, -87.868946);
+        boudaryCoordinates[4] = new LatLng(43.075286, -87.868671);
+        boudaryCoordinates[5] = new LatLng(43.074651, -87.868844);
+        boudaryCoordinates[6] = new LatLng(43.074637, -87.869612);
+        boudaryCoordinates[7] = new LatLng(43.074386, -87.869631);
+        boudaryCoordinates[8] = new LatLng(43.074066, -87.868265);
+        boudaryCoordinates[9] = new LatLng(43.073422, -87.867828);
+        boudaryCoordinates[10] = new LatLng(43.071232, -87.867039);
+        boudaryCoordinates[11] = new LatLng(43.070425, -87.867044);
+        boudaryCoordinates[12] = new LatLng(43.068633, -87.867741);
+        boudaryCoordinates[13] = new LatLng(43.066314, -87.868182);
+        boudaryCoordinates[14] = new LatLng(43.065334, -87.868998);
+        boudaryCoordinates[15] = new LatLng(43.064330, -87.870903);
+        boudaryCoordinates[16] = new LatLng(43.061760, -87.874310);
+        boudaryCoordinates[17] = new LatLng(43.058519, -87.876437);
+        boudaryCoordinates[18] = new LatLng(43.054434, -87.881381);
+        boudaryCoordinates[19] = new LatLng(43.053636, -87.883302);
+        boudaryCoordinates[20] = new LatLng(43.053389, -87.885997);
+        boudaryCoordinates[21] = new LatLng(43.053416, -87.885964);
+        boudaryCoordinates[22] = new LatLng(43.054165, -87.886229);
+        boudaryCoordinates[23] = new LatLng(43.054521, -87.886243);
+        boudaryCoordinates[24] = new LatLng(43.054954, -87.886051);
+        boudaryCoordinates[25] = new LatLng(43.055190, -87.885831);
+        boudaryCoordinates[26] = new LatLng(43.055482, -87.885429);
+        boudaryCoordinates[27] = new LatLng(43.055640, -87.885392);
+        boudaryCoordinates[28] = new LatLng(43.055690, -87.886464);
+        boudaryCoordinates[29] = new LatLng(43.054085, -87.888060);
+        boudaryCoordinates[30] = new LatLng(43.054567, -87.889006);
+        boudaryCoordinates[31] = new LatLng(43.052278, -87.891162);
+        boudaryCoordinates[32] = new LatLng(43.052872, -87.892402);
+        boudaryCoordinates[33] = new LatLng(43.052976, -87.903339);
+        boudaryCoordinates[34] = new LatLng(43.053674, -87.903588);
+        boudaryCoordinates[35] = new LatLng(43.055129, -87.905110);
+        boudaryCoordinates[36] = new LatLng(43.054548, -87.906710);
+        boudaryCoordinates[37] = new LatLng(43.053577, -87.907846);
+        boudaryCoordinates[38] = new LatLng(43.052304, -87.909265);
+        boudaryCoordinates[39] = new LatLng(43.052431, -87.909756);
+        boudaryCoordinates[40] = new LatLng(43.052411, -87.914345);
+        boudaryCoordinates[41] = new LatLng(43.074754, -87.914012);
+        boudaryCoordinates[42] = new LatLng(43.076294, -87.914732);
+        boudaryCoordinates[43] = new LatLng(43.076438, -87.913894);
+        boudaryCoordinates[44] = new LatLng(43.076375, -87.913976);
+        boudaryCoordinates[45] = new LatLng(43.082105, -87.913761);
+        boudaryCoordinates[46] = new LatLng(43.082095, -87.907503);
+        boudaryCoordinates[47] = new LatLng(43.085711, -87.907417);
+        boudaryCoordinates[48] = new LatLng(43.085754, -87.908544);
+        boudaryCoordinates[49] = new LatLng(43.086995, -87.908563);
+        boudaryCoordinates[50] = new LatLng(43.087018, -87.910866);
+        boudaryCoordinates[51] = new LatLng(43.088165, -87.910858);
+        boudaryCoordinates[52] = new LatLng(43.088215, -87.912023);
+        boudaryCoordinates[53] = new LatLng(43.089377, -87.912003);
+        boudaryCoordinates[54] = new LatLng(43.089272, -87.873910);
 
 
-        for(int i=0;i<boudaryCoordinates.length;++i){
+        for (int i = 0; i < boudaryCoordinates.length; ++i) {
             boundaries.add(boudaryCoordinates[i]);
         }
         mMap.addPolygon(boundaries);
 
     }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        boolean granted=true;
-        for(int i=0;i<grantResults.length;++i){
-            if(grantResults[i] != android.content.pm.PackageManager.PERMISSION_GRANTED){
+        boolean granted = true;
+        for (int i = 0; i < grantResults.length; ++i) {
+            if (grantResults[i] != android.content.pm.PackageManager.PERMISSION_GRANTED) {
                 granted = false;
                 break;
             }
         }
-        if(granted) {
+        if (granted) {
             if (requestCode == SETCURLOCPERMISSION) {
                 return;
             }
@@ -543,42 +575,49 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
 
-    public void getRide(View v){
-        if(dest != null){
-            if(pickup ==null){
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    String[] permissions = new String[2];
-                    permissions[0] = Manifest.permission.ACCESS_FINE_LOCATION;
-                    permissions[1] = Manifest.permission.ACCESS_COARSE_LOCATION;
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        requestPermissions(permissions, SETCURLOCPERMISSION);
+    public void getRide(View v) {
+        if(rideRequestSent) {
+            callServer(REQUEST_RIDE_URL, null, "DELETE");
+        }
+        else {
+            if (dest != null) {
+                if (pickup == null) {
+                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        String[] permissions = new String[2];
+                        permissions[0] = Manifest.permission.ACCESS_FINE_LOCATION;
+                        permissions[1] = Manifest.permission.ACCESS_COARSE_LOCATION;
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            requestPermissions(permissions, SETDESTTOCURLOC);
+                        }
+                        return;
                     }
-                    return;
-                }
-                Location currentLocation = LocationServices.FusedLocationApi.getLastLocation(mLocationClient);
+                    Location currentLocation = LocationServices.FusedLocationApi.getLastLocation(mLocationClient);
 
-                pickup = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
-                if(currentLocation==null){
-                    Toast.makeText(this, "Unable to get your location. Please enter pick up location manually", Toast.LENGTH_LONG).show();
-                    return;
+                    pickup = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
+                    if (currentLocation == null) {
+                        Toast.makeText(this, "Unable to get your location. Please enter pick up location manually", Toast.LENGTH_LONG).show();
+                        return;
+                    }
                 }
+                String json = "{\"picklat\":" + pickup.latitude
+                        + ",\"picklong\":" + pickup.longitude
+                        + ",\"destlat\":" + dest.latitude
+                        + ",\"destlong\":" + dest.longitude + "}";
+
+                callServer(REQUEST_RIDE_URL, json, "POST");
+            } else {
+                Toast.makeText(this, "Destination is required for ride request", Toast.LENGTH_SHORT).show();
             }
-            String json = "{\"picklat\":"+new Double(pickup.latitude)
-                    +",\"picklong\":"+new Double(pickup.longitude)
-                    +",\"destlat\":"+new Double(dest.latitude)
-                    +",\"destlong\":"+new Double(dest.longitude)+"}";
-
-            callServer(REQUEST_RIDE_URL, json, "POST");
-
         }
-        else{
-            Toast.makeText(this, "Destination is required for ride request", Toast.LENGTH_SHORT).show();
-        }
+
+
     }
+
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        Log.i(TAG, "onConnected: ");
+
     }
+
     @Override
     public void onConnectionSuspended(int i) {
         Log.i(TAG, "onConnectionSuspended: ");
@@ -587,5 +626,38 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.i(TAG, "onConnectionFailed: ");
+    }
+
+    public void startCheckingLocation() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            Log.i(TAG, "startCheckingLocation: ");
+            LocationServices.FusedLocationApi.requestLocationUpdates(mLocationClient,
+                    new LocationRequest()
+                            .setInterval(5000)
+                            .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                            .setFastestInterval(1000).setSmallestDisplacement(60),
+                    this);
+        }
+
+    }
+   
+    @Override
+    public void onLocationChanged(Location location) {
+
+        double feetNS = 364476.6523864369*(dest.latitude-location.getLatitude());
+        double feetEW = 267522.2265366347*(dest.longitude-location.getLongitude());
+        double straightLineDistance = Math.sqrt(feetEW*feetEW + feetNS*feetNS);
+        Log.i(TAG, "onLocationChanged: " + location.getLatitude() + ", " + location.getLongitude());
+        if(straightLineDistance<500){
+            Log.i(TAG, "onLocationChanged: Arrived");
+            PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), RATINGDIALOGID,
+                    new Intent(getApplicationContext(), RateDriverActivity.class), PendingIntent.FLAG_CANCEL_CURRENT);
+            NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext()).setSmallIcon(ic_launcher).setContentTitle("UWM B.O.S.S").setContentText("Tap here to rate your driver").setContentIntent(contentIntent).setAutoCancel(true);
+            LocationServices.FusedLocationApi.removeLocationUpdates(mLocationClient, this);
+
+            NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            notificationManager.notify(129, mBuilder.build());
+        }
+
     }
 }

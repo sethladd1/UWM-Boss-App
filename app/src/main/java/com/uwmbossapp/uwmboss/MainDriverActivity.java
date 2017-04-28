@@ -336,7 +336,7 @@ public class MainDriverActivity extends AppCompatActivity
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            String message = intent.getStringExtra();
+
         }
     }
 }

@@ -16,6 +16,8 @@ import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.RelativeLayout;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -63,6 +65,9 @@ public class DriverHomeFragment extends SupportMapFragment
     private OnDriverPairedListener mListener;
     private static final int GET_LOC_PERMISSION = 25;
     private GoogleApiClient api_client;
+    private RelativeLayout ride_buttons_layout;
+    private Button ride_pickup_location_button;
+    private Button ride_destination_location_button;
 
 
     public DriverHomeFragment() {/** Required empty public constructor*/}
@@ -139,6 +144,7 @@ public class DriverHomeFragment extends SupportMapFragment
         map.animateCamera(update);
         if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.M){
             if(ActivityCompat.checkSelfPermission(this.getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ){
+                map.setMyLocationEnabled(true);
                 buildGoogleApiClient();
             }else{
                 checkLocationPermissions();
@@ -147,10 +153,10 @@ public class DriverHomeFragment extends SupportMapFragment
             map.setMyLocationEnabled(true);
             buildGoogleApiClient();
         }
-        MarkerOptions marker_options = new MarkerOptions();
-        marker_options.position(location);
-        marker_options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
-        map.addMarker(marker_options);
+//        MarkerOptions marker_options = new MarkerOptions();
+//        marker_options.position(location);
+//        marker_options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
+//        map.addMarker(marker_options);
         map.animateCamera(CameraUpdateFactory.newLatLngZoom(location, 12));
 
 
@@ -181,10 +187,10 @@ public class DriverHomeFragment extends SupportMapFragment
     public void onLocationChanged(Location location) {
         map.clear();
         LatLng ltlng = new LatLng(location.getLatitude(), location.getLongitude());
-        MarkerOptions marker_options = new MarkerOptions();
-        marker_options.position(ltlng);
-        marker_options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
-        map.addMarker(marker_options);
+//        MarkerOptions marker_options = new MarkerOptions();
+//        marker_options.position(ltlng);
+//        marker_options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
+//        map.addMarker(marker_options);
         map.animateCamera(CameraUpdateFactory.newLatLngZoom(ltlng, 14));
     }
 
@@ -198,12 +204,19 @@ public class DriverHomeFragment extends SupportMapFragment
         //TODO:
     }
 
-
     public void createNewRide(Ride ride){
         //TODO:
+        ride_buttons_layout = new RelativeLayout(this.getContext());
+        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        layoutParams.addRule(RelativeLayout.ALIGN_BASELINE);
+        ride_buttons_layout.setLayoutParams(layoutParams);
+
     }
 
     public void removePassenger(){
+        //TODO:
+    }
+    public void finishRide(){
         //TODO:
     }
 
