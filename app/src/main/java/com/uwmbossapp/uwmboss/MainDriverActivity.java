@@ -86,14 +86,17 @@ public class MainDriverActivity extends AppCompatActivity
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.driver_home:
+                        if(frag_view instanceof DriverHomeFragment){
+                            return false;
+                        }
                         frag_view = DriverHomeFragment.newInstance(createLocationParams());
                         break;
                     case R.id.driver_dashboard:
                         frag_view = DriverDashBoard.newInstance();
                         break;
                     case R.id.driver_queue_table:
-                        frag_view = PassengerQueueTableFragment.newInstance(0);
-                        break;
+//                        frag_view = PassengerQueueTableFragment.newInstance(0);
+                        return false;
                     default:
                         return false;
                 }
@@ -125,6 +128,9 @@ public class MainDriverActivity extends AppCompatActivity
         });
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(new DriverBroadcastReceiver(), new IntentFilter(MyService.MY_SERVICE_MESSAGE));
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(new RideBroadcastReceiver(), new IntentFilter());
+        frag_view = DriverHomeFragment.newInstance(new float[]{driver.loclat, driver.loclong});
+        final FragmentTransaction init_transaction = fragment_manager.beginTransaction();
+        init_transaction.replace(frag_container.getId(), frag_view).commit();
     }
     private void startMapNavigation(){
         if(ride != null&&driver!=null){

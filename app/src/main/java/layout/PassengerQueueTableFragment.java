@@ -15,7 +15,6 @@ import com.uwmbossapp.uwmboss.R;
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link PassengerQueueTableFragment.OnFragmentInteractionListener} interface
  * to handle interaction events.
  * Use the {@link PassengerQueueTableFragment#newInstance} factory method to
  * create an instance of this fragment.
@@ -28,7 +27,7 @@ public class PassengerQueueTableFragment extends ListFragment {
     // TODO: Rename and change types of parameters
     private int mParam1;
 
-    private OnFragmentInteractionListener mListener;
+//    private OnFragmentInteractionListener mListener;
 
     public PassengerQueueTableFragment() {
         // Required empty public constructor
@@ -66,12 +65,12 @@ public class PassengerQueueTableFragment extends ListFragment {
         return inflater.inflate(R.layout.fragment_passenger_queue_table, container, false);
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onElementSelected(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
-    }
+//    // TODO: Rename method, update argument and hook method into UI event
+//    public void onElementSelected(Uri uri) {
+//        if (mListener != null) {
+//            mListener.onFragmentInteraction(uri);
+//        }
+//    }
 
     @Override
     public void onAttach(Context context) {
@@ -87,7 +86,7 @@ public class PassengerQueueTableFragment extends ListFragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        mListener = null;
+//        mListener = null;
     }
 
     /**
@@ -100,8 +99,8 @@ public class PassengerQueueTableFragment extends ListFragment {
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
-    }
+//    public interface OnFragmentInteractionListener {
+//        // TODO: Update argument type and name
+//        void onFragmentInteraction(Uri uri);
+//    }
 }

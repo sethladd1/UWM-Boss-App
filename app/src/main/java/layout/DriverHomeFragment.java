@@ -3,6 +3,7 @@ package layout;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
@@ -59,7 +60,7 @@ public class DriverHomeFragment extends SupportMapFragment
 
     private static final String DRIVER_LOC_ARG = "param1";
     public static final float SMALLEST_DISPLACEMENT = 137f;
-    private LocationRequest loc_request;
+//    private LocationRequest loc_request;
     private float[] mParam1;
     private GoogleMap map;
     private OnDriverPairedListener mListener;
@@ -173,13 +174,13 @@ public class DriverHomeFragment extends SupportMapFragment
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        loc_request = new LocationRequest();
-        loc_request.setInterval(5000);
-        loc_request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        loc_request.setFastestInterval(1000);
-        loc_request.setSmallestDisplacement(SMALLEST_DISPLACEMENT);
         if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
-            LocationServices.FusedLocationApi.requestLocationUpdates(api_client, loc_request, this);
+            LocationServices.FusedLocationApi.requestLocationUpdates(api_client, new LocationRequest()
+                    .setInterval(5000)
+                    .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                    .setFastestInterval(1000)
+                    .setSmallestDisplacement(SMALLEST_DISPLACEMENT),
+                    this);
         }
     }
 
@@ -204,17 +205,49 @@ public class DriverHomeFragment extends SupportMapFragment
         //TODO:
     }
 
-    public void createNewRide(Ride ride){
-        //TODO:
+    private void generateLocationButtons(float picklat, float picklong, float destlat, float destlong){
         ride_buttons_layout = new RelativeLayout(this.getContext());
-        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-        layoutParams.addRule(RelativeLayout.ALIGN_BASELINE);
-        ride_buttons_layout.setLayoutParams(layoutParams);
+        RelativeLayout.LayoutParams match_wrap = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        match_wrap.addRule(RelativeLayout.ALIGN_BASELINE);
+        ride_buttons_layout.setLayoutParams(match_wrap);
+        ride_pickup_location_button = new Button(this.getContext());
+        ride_destination_location_button = new Button(this.getContext());
+        RelativeLayout.LayoutParams pickup_layout_params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        RelativeLayout.LayoutParams dest_layout_params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        pickup_layout_params.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+        dest_layout_params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+        ride_pickup_location_button.setLayoutParams(pickup_layout_params);
+        ride_destination_location_button.setLayoutParams(dest_layout_params);
+        ride_pickup_location_button.setBackgroundColor(Color.GREEN);
+        ride_pickup_location_button.setText("P");
+        ride_pickup_location_button.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+        ride_pickup_location_button.setTextColor(Color.DKGRAY);
+        ride_destination_location_button.setBackgroundColor(Color.RED);
+        ride_destination_location_button.setText("D");
+        ride_destination_location_button.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+        ride_destination_location_button.setTextColor(Color.DKGRAY);
+        ride_pickup_location_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //TODO:
+            }
+        });
+        ride_destination_location_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //TODO:
+            }
+        });
 
     }
 
+
+    public void createNewRide(Ride ride){
+        generateLocationButtons(ride.picklat, ride.picklong, ride.destlat, ride.destlong);
+    }
+
     public void removePassenger(){
-        //TODO:
+        //TODO: remove location buttons
     }
     public void finishRide(){
         //TODO:

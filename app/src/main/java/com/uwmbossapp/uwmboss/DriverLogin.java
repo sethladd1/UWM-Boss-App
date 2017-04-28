@@ -37,18 +37,19 @@ public class DriverLogin extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String input = edit_text.getText().toString();
-                if(input != null && !input.isEmpty()) {
-                    try{
-                        intent.putExtra("driver", new Driver(user.user_name, user.user_id, Integer.parseInt(input), location));
-                        startActivity(intent);
-                    }catch (NumberFormatException e){
-                        e.printStackTrace();
-                    }
-
-                }else{
-                    Toast.makeText(DriverLogin.this, "please input vanID", Toast.LENGTH_SHORT).show();
+                try{
+                    intent.putExtra("driver", new Driver(user.user_name, user.user_id, Integer.parseInt(input), location));
+                    startActivity(intent);
+                }catch (NumberFormatException e){
+                    Toast.makeText(DriverLogin.this, "please input valid Van ID", Toast.LENGTH_SHORT).show();
+                    e.printStackTrace();
+                }catch (NullPointerException e){
+                    Toast.makeText(DriverLogin.this, "please input valid Van ID", Toast.LENGTH_SHORT).show();
+                    e.printStackTrace();
                 }
+
             }
+
         });
 
     }
