@@ -66,6 +66,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             FIREBASE_TOKENS_URL = "https://boss-30632.firebaseio.com/tokens.json",
             REQUEST_RIDE_URL = "https://uwm-boss.com/admin/rides", COOKIES="https://uwm-boss.com/cookies";
     //    append username+".json" to this url when calling
+    private static final int DRIVER_LOGIN = 25;
     private static final String FIREBASE_USER_URL = "https://boss-30632.firebaseio.com/tokens/";
     private final int WEBLOGINID = 0, ACCOUNTACTIVITYID = 1, REPORTACTIVITYID=3, SETCURLOCPERMISSION = 55, SETDESTTOCURLOC=56, GET_LOCATION_PERMISSION = 57;
     private SharedPreferences sharedPreferences;
@@ -81,6 +82,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private MenuItem driver_login;
     private User user;
     private Location location;
+    private Menu menu;
 
     PlaceAutocompleteFragment autocompleteFragmentDest, autocompleteFragmentPickup;
     private BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -114,13 +116,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                                 callServer(FIREBASE_TOKENS_URL, "{\"" + username + "\":{\"token\":\"" + fbToken + "\"}}", "PATCH");
                                 loggedIn=true;
                                 user = User.fromJSON(accountInfo);
-                                if(driver_login != null){
-                                    if(user.is_driver){
-                                        driver_login.setVisible(true).setEnabled(true);
-                                    }else{
-                                        driver_login.setVisible(false).setEnabled(false);
-                                    }
-                                }
+                                invalidateOptionsMenu();
 
                             } catch (JSONException e) {
                                 loggedIn=false;
@@ -248,10 +244,23 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         startService(intent2);
     }
 
+
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        // Inflate the menu; this adds items to the action bar if it is present.
+//        getMenuInflater().inflate(R.menu.main, menu);
+//        this.menu = menu;
+//        return true;
+//    }
+
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
+    public boolean onPrepareOptionsMenu(Menu menu){
         getMenuInflater().inflate(R.menu.main, menu);
+        if (user != null){
+            if(!user.is_driver)
+                menu.removeItem(R.id.driver_login);
+        }
+        this.menu = menu;
         return true;
     }
 
@@ -276,15 +285,20 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 return true;
             case R.id.action_report:
                 startActivity(new Intent(this, report.class));
+                return true;
 
             case R.id.driver_login:
                 if(!loggedIn){login();}
-                if(accountInfo == null) {callServer(USER_URL, null, "GET");}
-
+                if(accountInfo == null) {
+                    callServer(USER_URL, null, "GET");
+                }
                 else {
-                    if(location == null)
-                        setCurrentLocation();
-                    startActivity(new Intent(this, DriverLogin.class).putExtra("user", user).putExtra("location", location));
+                    if(user.is_driver) {
+                        if (location == null)
+                            setCurrentLocation();
+                        startActivity(new Intent(this, DriverLogin.class).putExtra("user", user).putExtra("location", location));
+                    }else
+                        Toast.makeText(this, "You are not a driver", Toast.LENGTH_SHORT).show();
                 }
                 return true;
         }
@@ -515,7 +529,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
         if(granted) {
             if (requestCode == SETCURLOCPERMISSION) {
-               return;
+                return;
             }
             else if(requestCode==SETDESTTOCURLOC){
                 getRide(null);

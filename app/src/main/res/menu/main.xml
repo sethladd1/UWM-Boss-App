@@ -27,8 +27,9 @@
     <item
         android:id="@+id/driver_login"
         android:orderInCategory="3"
+        app:showAsAction="always"
         android:title="Driver Login"
-        android:icon="@drawable/ic_action_account"/>
+        android:icon="@drawable/ic_action_profile"/>
 
 
 </menu>

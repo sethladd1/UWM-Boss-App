@@ -34,6 +34,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.gson.JsonParseException;
+import com.uwmbossapp.uwmboss.services.MyFirebaseMessagingService;
 import com.uwmbossapp.uwmboss.services.MyService;
 
 import layout.DriverDashBoard;
@@ -75,6 +76,7 @@ public class MainDriverActivity extends AppCompatActivity
         fragment_manager = getSupportFragmentManager();
         buildGoogleApiClient();
         driver = getIntent().getExtras().getParcelable("driver");
+        PATCH_Driver(driver);
         location = getDeviceLocation();
         frag_container = (FrameLayout) findViewById(R.id.driver_navigation_container);
         BottomNavigationView bottom_navigation_view = (BottomNavigationView) findViewById(R.id.navigation);
@@ -122,6 +124,7 @@ public class MainDriverActivity extends AppCompatActivity
             }
         });
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(new DriverBroadcastReceiver(), new IntentFilter(MyService.MY_SERVICE_MESSAGE));
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(new RideBroadcastReceiver(), new IntentFilter());
     }
     private void startMapNavigation(){
         if(ride != null&&driver!=null){
@@ -328,5 +331,12 @@ public class MainDriverActivity extends AppCompatActivity
             }
         }
 
+    }
+    private class RideBroadcastReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String message = intent.getStringExtra();
+        }
     }
 }
