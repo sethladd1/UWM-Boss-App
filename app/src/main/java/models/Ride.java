@@ -1,5 +1,7 @@
 package models;
 
+import android.support.annotation.Nullable;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -9,7 +11,8 @@ import com.google.gson.GsonBuilder;
 
 public class Ride {
 
-    public int user_id, driver_id;
+    public int user_id;
+    @Nullable public int driver_id;
     public float picklat, picklong, destlat, destlong;
 
     public Ride(int user_id, int driver_id, float plat, float plong, float dlat, float dlong){

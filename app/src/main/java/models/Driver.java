@@ -105,4 +105,7 @@ public class Driver implements Parcelable {
     public static Driver fromJSON(String content){
         return new GsonBuilder().create().fromJson(content, Driver.class);
     }
+    public float[] getLocation(){
+        return new float[]{loclat, loclong};
+    }
 }

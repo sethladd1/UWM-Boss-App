@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -23,7 +22,6 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.view.View;
-import android.webkit.WebView;
 import android.webkit.WebViewFragment;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -39,7 +37,6 @@ import com.uwmbossapp.uwmboss.services.MyService;
 
 import layout.DriverDashBoard;
 import layout.DriverHomeFragment;
-import layout.PassengerQueueTableFragment;
 import models.Driver;
 import models.Ride;
 
@@ -51,13 +48,14 @@ public class MainDriverActivity extends AppCompatActivity
 
     private static final String SHOW_DRIVER_URL = "https://uwm-boss.com/admin/drivers/show";
     private static final String DRIVER_URL = "https://uwm-boss.com/admin/drivers/";
-    private static final String CANCEL_RIDE_URL = "https://uwm-boss.com/admin/rides/";
+    private static final String RIDE_URL = "https://uwm-boss.com/admin/rides/";
     private FragmentManager fragment_manager;
     private Fragment frag_view;
     private Location location;
     private static final int GET_LOC_PERMISSION = 25;
     private Button availability_button;
     private Button cancel_ride_button;
+    private Button delete_ride_button;
     private Ride ride;
     private Driver driver;
     private FrameLayout frag_container;
@@ -102,6 +100,9 @@ public class MainDriverActivity extends AppCompatActivity
                 }
                 final FragmentTransaction transaction = fragment_manager.beginTransaction();
                 transaction.replace(frag_container.getId(), frag_view).commit();
+                if(frag_view instanceof DriverHomeFragment && ride != null){
+                    newRide();
+                }
                 return true;
             }
         });
@@ -111,10 +112,11 @@ public class MainDriverActivity extends AppCompatActivity
             public void onClick(View v) {
                 if (ride == null) {
                     Toast.makeText(MainDriverActivity.this, "No Ride to Cancel", Toast.LENGTH_SHORT).show();
+                    return;
                 }
                 //TODO remove driver from ride object
-                PATCH_RideCanceled(ride);
                 canceledRide();
+                PATCH_Ride(ride);
             }
         });
         availability_button = (Button) findViewById(R.id.driver_availability);
@@ -126,22 +128,19 @@ public class MainDriverActivity extends AppCompatActivity
                 PATCH_Driver(driver);
             }
         });
+        delete_ride_button = (Button) findViewById(R.id.driver_remove_ride);
+        delete_ride_button.setOnClickListener(new View.OnClickListener(){
+
+            @Override
+            public void onClick(View v) {
+                deleteRide();
+            }
+        });
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(new DriverBroadcastReceiver(), new IntentFilter(MyService.MY_SERVICE_MESSAGE));
-        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(new RideBroadcastReceiver(), new IntentFilter());
-        frag_view = DriverHomeFragment.newInstance(new float[]{driver.loclat, driver.loclong});
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(new RideBroadcastReceiver(), new IntentFilter(MyFirebaseMessagingService.FIREBASE_MESSAGING_SERVICE_PAYLOAD));
+        frag_view = DriverHomeFragment.newInstance(driver.getLocation());
         final FragmentTransaction init_transaction = fragment_manager.beginTransaction();
         init_transaction.replace(frag_container.getId(), frag_view).commit();
-    }
-    private void startMapNavigation(){
-        if(ride != null&&driver!=null){
-            String saddr = "saddr=";
-            String daddr = "daddr=";
-            String googleMapsNavigationURL = "https://maps.google.com/maps?";
-            googleMapsNavigationURL+=saddr+""+driver.loclat+","+driver.loclong+"&"+daddr+""+ride.picklat+","+ride.picklong+"";
-            WebViewFragment web_frag = new WebViewFragment();
-            web_frag.getWebView().loadUrl(googleMapsNavigationURL);
-        }
-
     }
 
     private void checkLocationPermissions() {
@@ -246,29 +245,50 @@ public class MainDriverActivity extends AppCompatActivity
         callServer(SHOW_DRIVER_URL, null, "GET");
     }
 
-    private void PATCH_RideCanceled(Ride ride) {
+    private void PATCH_Ride(Ride ride) {
         try{
             String content = Ride.toJson(ride);
-            callServer(CANCEL_RIDE_URL, content, "PATCH");
+            callServer(RIDE_URL, content, "PATCH");
         }catch (JsonParseException e) {
             e.printStackTrace();
         }
     }
 
-    @Override
-    public void newRide() {
-        //TODO: pass Ride information to DriverHomeFragment
-
+    /**
+     *
+     * calls DriverHomeFragment method to dynamically add views and map stuff for new Ride
+     */
+    private void newRide() {
+        if(frag_view instanceof DriverHomeFragment){
+            ((DriverHomeFragment) frag_view).createNewRide(ride);
+        }
     }
 
-    @Override
-    public void canceledRide() {
-        //TODO: let DriverHomeFragment know that Ride has been canceled
+    private void canceledRide() {
+        //TODO: driver can't complete ride, PATCH it and let DriverHomeFragment know that Ride has been canceled
+        driver.setAvailability(false);
+        ride.driver_id = -1;
+        Toast.makeText(this, "You have been set to UNAVAILABLE", Toast.LENGTH_LONG).show();
+        PATCH_Ride(ride);
+    }
+
+    //TODO: maybe add Dialogs for cancel and delete asking if they are sure they want to do it.
+
+    private void deleteRide() {
+        //TODO: ride is bogus delete it from server and let DriverHomeFragment know
+        callServer(RIDE_URL, null, "DELETE");
+        ride = null;
+        if(frag_view instanceof DriverHomeFragment){
+            frag_view = DriverHomeFragment.newInstance(driver.getLocation());
+            final FragmentTransaction transaction = fragment_manager.beginTransaction();
+            transaction.replace(frag_container.getId(), frag_view).commit();
+        }
     }
 
     @Override
     public void finishRide() {
-        //TODO: let DriverHomeFragment know that ride is finished
+        //TODO: DriverFragment has noticed it has reached the destination, callback for activity to finish ride and things.
+        ride = null;
     }
 
 
@@ -327,7 +347,7 @@ public class MainDriverActivity extends AppCompatActivity
                         Toast.makeText(MainDriverActivity.this, "Error: " + intent.getStringExtra("errorMessage"), Toast.LENGTH_SHORT).show();
                     }
 
-                case CANCEL_RIDE_URL:
+                case RIDE_URL:
                     if(intent.getBooleanExtra("success", false)){
                         Toast.makeText(MainDriverActivity.this, "Ride", Toast.LENGTH_SHORT);
                     }else{
@@ -342,7 +362,14 @@ public class MainDriverActivity extends AppCompatActivity
 
         @Override
         public void onReceive(Context context, Intent intent) {
+            String content = intent.getStringExtra(MyFirebaseMessagingService.FIREBASE_MESSAGING_SERVICE_PAYLOAD);
 
+            try {
+                ride = Ride.fromJSON(content);
+                newRide();
+            }catch (JsonParseException e){
+                e.printStackTrace();
+            }
         }
     }
 }
