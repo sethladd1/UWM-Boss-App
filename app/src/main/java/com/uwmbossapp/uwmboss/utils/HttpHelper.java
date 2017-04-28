@@ -38,6 +38,7 @@ public class HttpHelper {
 
         InputStream is = null;
         try {
+
             URL url = new URL(address);
             HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
             conn.setReadTimeout(10000);

@@ -8,4 +8,6 @@
     <string name="account">account</string>
     <string name="profile">profile</string>
     <string name="report">report</string>
+    <string name="CancelRide">Cancel Ride</string>
+    <string name="GetRide">Get a Ride!</string>
 </resources>

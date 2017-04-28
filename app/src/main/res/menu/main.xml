@@ -10,12 +10,6 @@
         app:showAsAction="always"
         android:icon="@drawable/ic_action_account"/>
 
-    <!--<item-->
-        <!--android:id="@+id/action_profile"-->
-        <!--android:orderInCategory="1"-->
-        <!--android:title="@string/profile"-->
-        <!--app:showAsAction="always"-->
-        <!--android:icon="@drawable/ic_action_profile"/>-->
 
     <item
         android:id="@+id/action_report"
