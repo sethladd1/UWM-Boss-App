@@ -10,10 +10,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.uwmbossapp.uwmboss.R;
-import com.uwmbossapp.uwmboss.utils.HttpHelper;
-import com.uwmbossapp.uwmboss.utils.NetworkHelper;
-
 import models.Driver;
 import models.User;
 
@@ -38,7 +34,7 @@ public class DriverLogin extends AppCompatActivity {
             public void onClick(View v) {
                 String input = edit_text.getText().toString();
                 try{
-                    intent.putExtra("driver", new Driver(user.user_name, user.user_id, Integer.parseInt(input), location));
+                    intent.putExtra("driver", new Driver(user.email, user.id, Integer.parseInt(input), location));
                     startActivity(intent);
                 }catch (NumberFormatException e){
                     Toast.makeText(DriverLogin.this, "please input valid Van ID", Toast.LENGTH_SHORT).show();

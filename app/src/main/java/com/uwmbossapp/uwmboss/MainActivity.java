@@ -7,7 +7,6 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -22,7 +21,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -34,7 +32,6 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
@@ -74,7 +71,7 @@ import models.User;
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
     private static final String USER_URL = "https://uwm-boss.com/admin/users/show",
             FIREBASE_TOKENS_URL = "https://boss-30632.firebaseio.com/tokens.json",
-            REQUEST_RIDE_URL = "https://uwm-boss.com/admin/rides", COOKIES = "https://uwm-boss.com/cookies";
+            REQUEST_RIDE_URL = "https://uwm-boss.com/admin/rides";
     //    append username+".json" to this url when calling
     private static final int DRIVER_LOGIN = 25;
     private static final String FIREBASE_USER_URL = "https://boss-30632.firebaseio.com/tokens/";
@@ -106,7 +103,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             String message = intent.getStringExtra(MyService.MY_SERVICE_PAYLOAD);
             Log.i(TAG, "onReceive: "+url);
             Log.i(TAG, "onReceive: " +message);
-            Log.i(TAG, "onReceive: token=" + token);
             switch (url) {
                 case USER_URL:
                     if (message == null) {
@@ -147,9 +143,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     if (intent.getBooleanExtra("success", false)) {
                         if (!intent.getStringExtra("requestType").equalsIgnoreCase("delete")) {
                             Toast.makeText(MainActivity.this, "Ride request sent and received.", Toast.LENGTH_SHORT).show();
-//                            Intent reportIntent = new Intent(MainActivity.this, report.class);
-//                            reportIntent.putExtra("waitingForRide", true);
-//                            startActivityForResult(reportIntent, REPORTACTIVITYID);
                             button.setText(R.string.CancelRide);
                             rideRequestSent = true;
                             startCheckingLocation();
@@ -165,8 +158,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     } else {
                         Toast.makeText(MainActivity.this, "Error: " + intent.getStringExtra("errorMessage"), Toast.LENGTH_SHORT).show();
                     }
-                case COOKIES:
-                    Log.i(TAG, "Cookies server saw:" + message);
                 default:
                     break;
             }
