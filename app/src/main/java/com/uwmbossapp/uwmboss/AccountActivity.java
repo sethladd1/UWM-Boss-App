@@ -1,8 +1,12 @@
 package com.uwmbossapp.uwmboss;
 
 import android.content.Intent;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
@@ -18,6 +22,14 @@ public class AccountActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_account);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.mToolbar);
+
+        setSupportActionBar(toolbar);
+        ActionBar ab = getSupportActionBar();
+        if(ab!=null){
+            ab.setTitle("USER ACCOUNT");
+            ab.setDisplayHomeAsUpEnabled(true);
+        }
         user = (TextView) findViewById(R.id.userText);
         accountType = (TextView) findViewById(R.id.accountTypeText);
         String accountInfo = getIntent().getStringExtra("accountInfo");
@@ -41,6 +53,16 @@ public class AccountActivity extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch(item.getItemId()){
+            case android.R.id.home:
+                this.finish();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     public void logOut(View v) {

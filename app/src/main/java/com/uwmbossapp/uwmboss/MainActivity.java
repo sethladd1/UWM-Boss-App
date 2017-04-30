@@ -168,7 +168,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.i(TAG, "onCreate: ");
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -254,14 +253,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.i(TAG, "onResume: ");
-
-
-    }
-
     public void startFirebaseServices() {
         Intent intent = new Intent(this, MyFirebaseMessagingService.class);
         startService(intent);
@@ -308,9 +299,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     login();
                 }
                 return true;
-            case R.id.action_report:
-                startActivity(new Intent(this, report.class));
-                return true;
+
 
             case R.id.driver_login:
                 if(!loggedIn){login();}
@@ -326,6 +315,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         Toast.makeText(this, "You are not a driver", Toast.LENGTH_SHORT).show();
                 }
                 return true;
+            case R.id.action_info:
+                Intent infoIntent = new Intent(this, InfoActivity.class);
+                startActivity(infoIntent);
         }
 
 

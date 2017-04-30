@@ -16,4 +16,6 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="CancelRide">Cancel Ride</string>
     <string name="GetRide">Get a Ride!</string>
+    <string name="info">Info</string>
+    <string name="driver_login">Driver Login</string>
 </resources>

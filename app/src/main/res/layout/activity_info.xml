@@ -1,13 +1,95 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activity_info"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+    <android.support.design.widget.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/AppTheme.AppBarOverlay"
+        android:id="@+id/appBarLayout">
+        <android.support.v7.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/mToolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/colorPrimary"/>
+    </android.support.design.widget.AppBarLayout>
+
+
+    <TextView
+        android:id="@+id/generalInfoText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:textAlignment="center"
+        android:layout_below="@+id/infoHeader"
+        android:text="BOSS is a free safe ride service available to UWM students. The geographic area that is covered by the service is shown by the red outline on the map. You can find more information about BOSS at http://uwm.edu/boss"
+ />
+
+    <TextView
+        android:id="@+id/infoHeader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/waitTimeText"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:textSize="20sp"
+        android:textStyle="bold"
+
+
+        android:text="General Information" />
+<LinearLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.uwmbossapp.uwmboss.InfoActivity">
+    android:layout_below="@+id/generalInfoText"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/HoursHeaderText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        android:layout_marginTop="10dp"
+        android:text="Hour of Operation"
+        android:textAlignment="center"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/hoursText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textAlignment="center"
+
+            android:text="Fall and Spring Semesters\n6:00pm – 2:00am\n7 days per week" />
+
+        <TextView
+            android:id="@+id/hoursText1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textAlignment="center"
+            android:text="Winter and Summer Semesters\n7:00pm – 12:00am\n7 days per week" />
+    </LinearLayout>
+
+</LinearLayout>
+
+
+
+    <TextView
+        android:id="@+id/waitTimeText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="28dp"
+        android:text="Current average wait time before pickup: unknown"
+        android:layout_below="@+id/appBarLayout"
+        android:layout_centerHorizontal="true" />
 
 </RelativeLayout>

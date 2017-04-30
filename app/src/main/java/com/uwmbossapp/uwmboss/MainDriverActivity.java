@@ -27,6 +27,8 @@ import android.view.View;
 import android.webkit.WebView;
 import android.webkit.WebViewFragment;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
@@ -57,7 +59,7 @@ public class MainDriverActivity extends AppCompatActivity
     private Fragment frag_view;
     private Location location;
     private static final int GET_LOC_PERMISSION = 25;
-    private Button availability_button;
+    private CheckBox availability_button;
     private Button cancel_ride_button;
     private Ride ride;
     private Driver driver;
@@ -77,6 +79,8 @@ public class MainDriverActivity extends AppCompatActivity
         fragment_manager = getSupportFragmentManager();
         buildGoogleApiClient();
         driver = getIntent().getExtras().getParcelable("driver");
+
+
         PATCH_Driver(driver);
         location = getDeviceLocation();
         frag_container = (FrameLayout) findViewById(R.id.driver_navigation_container);
@@ -118,15 +122,16 @@ public class MainDriverActivity extends AppCompatActivity
                 canceledRide();
             }
         });
-        availability_button = (Button) findViewById(R.id.driver_availability);
-        availability_button.setOnClickListener(new View.OnClickListener() {
+        availability_button = (CheckBox) findViewById(R.id.driver_availability);
+        availability_button.setChecked(driver.isAvailable());
+        availability_button.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onClick(View v) {
-                //TODO make sure that they aren't paired with a driver
-                driver.setAvailability(!driver.isAvailable());
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                driver.setAvailability(isChecked);
                 PATCH_Driver(driver);
             }
         });
+
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(new DriverBroadcastReceiver(), new IntentFilter(MyService.MY_SERVICE_MESSAGE));
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(new RideBroadcastReceiver(), new IntentFilter());
         frag_view = DriverHomeFragment.newInstance(new float[]{driver.loclat, driver.loclong});
