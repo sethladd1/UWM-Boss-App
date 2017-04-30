@@ -18,9 +18,8 @@ import java.util.Map;
  */
 
 public class Driver implements Parcelable {
-    public String username;
     public int user_id;
-    public int van_id;
+//    public int van_id;
     @SerializedName("lat") public float loclat;
     @SerializedName("long") public float loclong;
     public boolean isAvailable;
@@ -39,9 +38,7 @@ public class Driver implements Parcelable {
     };
 
     private Driver(Parcel in){
-        username = in.readString();
         user_id = in.readInt();
-        van_id = in.readInt();
         loclat = in.readFloat();
         loclong = in.readFloat();
         isAvailable = (boolean)in.readValue(boolean.class.getClassLoader());
@@ -54,9 +51,7 @@ public class Driver implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(username);
         dest.writeInt(user_id);
-        dest.writeInt(van_id);
         dest.writeFloat(loclat);
         dest.writeFloat(loclong);
         dest.writeValue(isAvailable);
@@ -69,10 +64,8 @@ public class Driver implements Parcelable {
      * @param vid
      * @param location
      */
-    public Driver(String un, int uid, int vid, Location location){
-        username = un;
+    public Driver(int uid, Location location){
         user_id = uid;
-        van_id = vid;
         loclat = (float)location.getLatitude();
         loclong = (float)location.getLongitude();
         isAvailable = true;
@@ -81,15 +74,17 @@ public class Driver implements Parcelable {
     public boolean isAvailable(){
         return isAvailable;
     }
-    public int getVanID(){
-        return van_id;
-    }
+
+//    public int getVanID(){
+//        return van_id;
+//    }
+
     public int getUserID(){
         return user_id;
     }
-    public String getUserName(){
-        return username;
-    }
+//    public String getUserName(){
+//        return username;
+//    }
     public void setAvailability(boolean avail){
         isAvailable = avail;
     }

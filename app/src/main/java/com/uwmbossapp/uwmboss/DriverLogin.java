@@ -1,16 +1,25 @@
 package com.uwmbossapp.uwmboss;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.location.Location;
+import android.net.Uri;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParseException;
 import com.uwmbossapp.uwmboss.R;
+import com.uwmbossapp.uwmboss.services.MyService;
 import com.uwmbossapp.uwmboss.utils.HttpHelper;
 import com.uwmbossapp.uwmboss.utils.NetworkHelper;
 
@@ -19,11 +28,12 @@ import models.User;
 
 public class DriverLogin extends AppCompatActivity {
 
-    private SharedPreferences sharedPreferences;
-    private Intent intent;
+    private final static String SHOW_DRIVER_URL = "https://uwm-boss.com/admin/drivers/show";
     private EditText edit_text;
     private User user;
     private Location location;
+    private String input;
+    private Button login_button;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -32,25 +42,65 @@ public class DriverLogin extends AppCompatActivity {
         user = getIntent().getExtras().getParcelable("user");
         location = getIntent().getExtras().getParcelable("location");
         edit_text = (EditText) findViewById(R.id.van_id_edit_text);
-        intent = new Intent(this, MainDriverActivity.class);
-        ((Button) findViewById(R.id.van_login_button)).setOnClickListener(new View.OnClickListener() {
+//        input = findViewById(R.id.van_id_edit_text).;
+        login_button = (Button) findViewById(R.id.van_login_button);
+        login_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String input = edit_text.getText().toString();
+                DriverLogin.this.input = DriverLogin.this.edit_text.getText().toString();
+                driverLogin();
+            }
+        });
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(new LoginBroadcastReceiver(), new IntentFilter(MyService.MY_SERVICE_MESSAGE));
+    }
+    private void driverLogin(){
+        callServer(SHOW_DRIVER_URL, null, "GET");
+    }
+
+    public void callServer(String url, String message, String requestType) {
+        Intent intent = new Intent(this, MyService.class);
+        intent.setData(Uri.parse(url));
+        intent.putExtra("message", message);
+        intent.putExtra("requestType", requestType);
+        startService(intent);
+    }
+
+    private class  LoginBroadcastReceiver extends BroadcastReceiver{
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String content = intent.getStringExtra(MyService.MY_SERVICE_PAYLOAD);
+            if(content == null){
+                //create driver
                 try{
-                    intent.putExtra("driver", new Driver(user.user_name, user.user_id, Integer.parseInt(input), location));
+                    Driver driver = new Driver(user.user_id, location);
+                    callServer("https://uwm-boss.com/admin/drivers/", Driver.toJSON(driver), "POST");
+                    new Intent(DriverLogin.this, MainDriverActivity.class).putExtra("driver", driver);
                     startActivity(intent);
-                }catch (NumberFormatException e){
-                    Toast.makeText(DriverLogin.this, "please input valid Van ID", Toast.LENGTH_SHORT).show();
-                    e.printStackTrace();
-                }catch (NullPointerException e){
-                    Toast.makeText(DriverLogin.this, "please input valid Van ID", Toast.LENGTH_SHORT).show();
+                }catch (JsonParseException e){
+                    Toast.makeText(DriverLogin.this, "cannot make object JSON", Toast.LENGTH_SHORT).show();
+                }
+            }
+            if(content.trim().equals("null")){
+                //create driver
+                try{
+                    Driver driver = new Driver(user.user_id, location);
+                    callServer("https://uwm-boss.com/admin/drivers/", Driver.toJSON(driver), "POST");
+                    startActivity(new Intent(DriverLogin.this, MainDriverActivity.class).putExtra("driver", driver));
+                }catch (JsonParseException e){
+                    Toast.makeText(DriverLogin.this, "cannot make object JSON", Toast.LENGTH_SHORT).show();
+                }
+            }else{
+                //driver is already in table
+                try{
+                    Log.i("LoginBroadcastManager", "JSON: " +content);
+                    startActivity(new Intent(DriverLogin.this, MainDriverActivity.class).putExtra("driver", Driver.fromJSON(content)));
+                }catch (JsonParseException e){
                     e.printStackTrace();
                 }
-
             }
 
-        });
-
+        }
     }
 }
+

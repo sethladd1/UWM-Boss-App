@@ -12,7 +12,7 @@ import com.google.gson.GsonBuilder;
 public class Ride {
 
     public int user_id;
-    @Nullable public int driver_id;
+     public Integer driver_id;
     public float picklat, picklong, destlat, destlong;
 
     public Ride(int user_id, int driver_id, float plat, float plong, float dlat, float dlong){
@@ -33,7 +33,7 @@ public class Ride {
         return new GsonBuilder().create().toJson(ride, Ride.class);
     }
 
-    public void setDriver(int driver_id) {
+    public void setDriver(Integer driver_id) {
         this.driver_id = driver_id;
     }
 

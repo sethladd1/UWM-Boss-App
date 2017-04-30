@@ -74,6 +74,7 @@ public class MainDriverActivity extends AppCompatActivity
         fragment_manager = getSupportFragmentManager();
         buildGoogleApiClient();
         driver = getIntent().getExtras().getParcelable("driver");
+
         PATCH_Driver(driver);
         location = getDeviceLocation();
         frag_container = (FrameLayout) findViewById(R.id.driver_navigation_container);
@@ -95,6 +96,10 @@ public class MainDriverActivity extends AppCompatActivity
                     case R.id.driver_queue_table:
 //                        frag_view = PassengerQueueTableFragment.newInstance(0);
                         return false;
+                    case R.id.driver_logout:
+                        logoutDriver();
+                        startActivity(new Intent(MainDriverActivity.this, MainActivity.class));
+
                     default:
                         return false;
                 }
@@ -141,6 +146,10 @@ public class MainDriverActivity extends AppCompatActivity
         frag_view = DriverHomeFragment.newInstance(driver.getLocation());
         final FragmentTransaction init_transaction = fragment_manager.beginTransaction();
         init_transaction.replace(frag_container.getId(), frag_view).commit();
+    }
+
+    private void logoutDriver() {
+        callServer(DRIVER_URL, null, "DELETE");
     }
 
     private void checkLocationPermissions() {
@@ -212,16 +221,6 @@ public class MainDriverActivity extends AppCompatActivity
     }
 
 
-    private void POST_Driver(Driver driver) {
-        try{
-            String content = Driver.toJSON(driver);
-            callServer(DRIVER_URL, content, "POST");
-        }
-        catch(JsonParseException e){
-            e.printStackTrace();
-        }
-    }
-
 
     public void callServer(String url, String message, String requestType) {
         Intent intent = new Intent(this, MyService.class);
@@ -267,6 +266,7 @@ public class MainDriverActivity extends AppCompatActivity
     private void canceledRide() {
         //TODO: driver can't complete ride, PATCH it and let DriverHomeFragment know that Ride has been canceled
         driver.setAvailability(false);
+        ride.setDriver(null);
         ride.driver_id = -1;
         Toast.makeText(this, "You have been set to UNAVAILABLE", Toast.LENGTH_LONG).show();
         PATCH_Ride(ride);
