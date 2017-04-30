@@ -18,29 +18,33 @@
         android:id="@+id/generalInfoText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="28dp"
         android:textAlignment="center"
-        android:layout_below="@+id/infoHeader"
+        android:textColor="@color/colorPrimary"
         android:text="BOSS is a free safe ride service available to UWM students. The geographic area that is covered by the service is shown by the red outline on the map. You can find more information about BOSS at http://uwm.edu/boss"
- />
+        android:layout_below="@+id/infoHeader"
+        android:layout_alignParentStart="true" />
 
     <TextView
         android:id="@+id/infoHeader"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/waitTimeText"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="20dp"
+        android:textColor="@color/colorPrimary"
+        android:layout_marginTop="70dp"
         android:textSize="20sp"
         android:textStyle="bold"
 
 
-        android:text="General Information" />
+        android:text="General Information"
+        android:layout_below="@+id/waitTimeText"
+        android:layout_centerHorizontal="true" />
 <LinearLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:layout_marginTop="91dp"
     android:layout_below="@+id/generalInfoText"
-    android:orientation="vertical">
+    android:layout_alignParentStart="true">
 
     <TextView
         android:id="@+id/HoursHeaderText"
@@ -49,6 +53,7 @@
 
         android:layout_marginTop="10dp"
         android:text="Hour of Operation"
+        android:textColor="@color/colorPrimary"
         android:textAlignment="center"
         android:textSize="15sp"
         android:textStyle="bold"
@@ -67,7 +72,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:textAlignment="center"
-
+            android:textColor="@color/colorPrimary"
             android:text="Fall and Spring Semesters\n6:00pm – 2:00am\n7 days per week" />
 
         <TextView
@@ -76,6 +81,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:textAlignment="center"
+            android:textColor="@color/colorPrimary"
             android:text="Winter and Summer Semesters\n7:00pm – 12:00am\n7 days per week" />
     </LinearLayout>
 
@@ -89,6 +95,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="28dp"
         android:text="Current average wait time before pickup: unknown"
+        android:textColor="@color/colorPrimary"
         android:layout_below="@+id/appBarLayout"
         android:layout_centerHorizontal="true" />
 

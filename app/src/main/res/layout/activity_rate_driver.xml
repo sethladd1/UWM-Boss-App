@@ -14,37 +14,46 @@
         android:text="Cancel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/ratingBar"
         android:onClick="onCancel"
-        android:layout_alignParentStart="true"
-        android:layout_marginStart="41dp"
-        android:layout_marginTop="103dp"
-        android:id="@+id/cancel" />
+        android:background="@color/colorPrimary"
+        android:textColor="@color/colorAccent"
+        android:layout_marginTop="79dp"
+        android:id="@+id/cancel"
+        android:layout_below="@+id/ratingBar"
+        android:layout_alignStart="@+id/ratingBar" />
 
     <Button
         android:text="Accept"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:onClick="onAccept"
-        android:layout_alignTop="@+id/cancel"
-        android:layout_alignParentEnd="true"
-        android:layout_marginEnd="34dp"
-        android:id="@+id/accept" />
+        android:background="@color/colorPrimary"
+        android:textColor="@color/colorAccent"
+        android:id="@+id/accept"
+        android:layout_alignBaseline="@+id/cancel"
+        android:layout_alignBottom="@+id/cancel"
+        android:layout_alignEnd="@+id/ratingBar" />
 
     <RatingBar
+        android:id="@+id/ratingBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="132dp"
-        android:id="@+id/ratingBar"
-        android:layout_alignParentTop="true"
+        android:layout_marginTop="49dp"
+        android:numStars="5"
+        android:stepSize="1"
+        android:theme="@style/RatingBar"
+        android:layout_below="@+id/textView2"
         android:layout_centerHorizontal="true" />
 
     <TextView
-        android:text="How was the drive?"
+        android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="72dp"
-        android:id="@+id/textView2"
+        android:layout_marginTop="104dp"
+        android:text="How was your trip?"
+        android:textColor="@color/colorPrimary"
+        android:textSize="24sp"
+        android:textStyle="bold"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true" />
 

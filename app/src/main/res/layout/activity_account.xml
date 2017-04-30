@@ -32,6 +32,8 @@
 
     <Button
         android:text="Log Out"
+        android:background="@color/colorPrimary"
+        android:textColor="@color/colorAccent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/accountTypeText"
