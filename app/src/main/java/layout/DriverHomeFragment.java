@@ -295,7 +295,7 @@ public class DriverHomeFragment extends SupportMapFragment
         ride_buttons_layout.addView(ride_pickup_location_button);
         ride_buttons_layout.addView(ride_destination_location_button);
         navigation_button_layout.addView(map_navigation_button);
-        
+
 
     }
 
@@ -310,6 +310,7 @@ public class DriverHomeFragment extends SupportMapFragment
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
                 .title("Destination"));
         generateLocationButtons(ride.picklat, ride.picklong, ride.destlat, ride.destlong);
+        
     }
 
     public void removePassenger(){
