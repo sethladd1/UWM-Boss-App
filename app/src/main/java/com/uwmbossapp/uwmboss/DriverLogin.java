@@ -15,7 +15,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
 import com.uwmbossapp.uwmboss.R;
@@ -48,10 +47,13 @@ public class DriverLogin extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 DriverLogin.this.input = DriverLogin.this.edit_text.getText().toString();
-                driverLogin();
+                //driverLogin();
+                startActivity(new Intent(DriverLogin.this, MainDriverActivity.class).putExtra("driver", new Driver(user.id, location)));
+
+
             }
         });
-        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(new LoginBroadcastReceiver(), new IntentFilter(MyService.MY_SERVICE_MESSAGE));
+//        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(new LoginBroadcastReceiver(), new IntentFilter(MyService.MY_SERVICE_MESSAGE));
     }
     private void driverLogin(){
         callServer(SHOW_DRIVER_URL, null, "GET");
@@ -65,42 +67,48 @@ public class DriverLogin extends AppCompatActivity {
         startService(intent);
     }
 
-    private class  LoginBroadcastReceiver extends BroadcastReceiver{
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String content = intent.getStringExtra(MyService.MY_SERVICE_PAYLOAD);
-            if(content == null){
-                //create driver
-                try{
-                    Driver driver = new Driver(user.user_id, location);
-                    callServer("https://uwm-boss.com/admin/drivers/", Driver.toJSON(driver), "POST");
-                    new Intent(DriverLogin.this, MainDriverActivity.class).putExtra("driver", driver);
-                    startActivity(intent);
-                }catch (JsonParseException e){
-                    Toast.makeText(DriverLogin.this, "cannot make object JSON", Toast.LENGTH_SHORT).show();
-                }
-            }
-            if(content.trim().equals("null")){
-                //create driver
-                try{
-                    Driver driver = new Driver(user.user_id, location);
-                    callServer("https://uwm-boss.com/admin/drivers/", Driver.toJSON(driver), "POST");
-                    startActivity(new Intent(DriverLogin.this, MainDriverActivity.class).putExtra("driver", driver));
-                }catch (JsonParseException e){
-                    Toast.makeText(DriverLogin.this, "cannot make object JSON", Toast.LENGTH_SHORT).show();
-                }
-            }else{
-                //driver is already in table
-                try{
-                    Log.i("LoginBroadcastManager", "JSON: " +content);
-                    startActivity(new Intent(DriverLogin.this, MainDriverActivity.class).putExtra("driver", Driver.fromJSON(content)));
-                }catch (JsonParseException e){
-                    e.printStackTrace();
-                }
-            }
-
-        }
-    }
+//    private class  LoginBroadcastReceiver extends BroadcastReceiver{
+//
+//        private Driver driver;
+//
+//        @Override
+//        public void onReceive(Context context, Intent intent) {
+//            String content = intent.getStringExtra(MyService.MY_SERVICE_PAYLOAD);
+//            if(content == null){
+//                //create driver
+//                try{
+//                    driver = new Driver(user.id, location);
+//                    new Intent(DriverLogin.this, MainDriverActivity.class).putExtra("driver", driver);
+//                    intent.putExtra("driver", driver);
+//                    startActivity(intent);
+//                }catch (JsonParseException e){
+//                    Toast.makeText(DriverLogin.this, "cannot make object JSON", Toast.LENGTH_SHORT).show();
+//                }
+//            }
+//            if(content.trim().equals("null")){
+//                //create driver
+//                try{
+//                    driver = new Driver(user.id, location);
+//                    callServer("https://uwm-boss.com/admin/drivers/", Driver.toJSON(driver), "POST");
+//                    startActivity(new Intent(DriverLogin.this, MainDriverActivity.class).putExtra("driver", driver));
+//                }catch (JsonParseException e){
+//                    Toast.makeText(DriverLogin.this, "cannot make object JSON", Toast.LENGTH_SHORT).show();
+//                }
+//            }else{
+//                //driver is already in table
+//                if(content.equals("true")){
+//                        Log.i("LoginBroadcastManager", "JSON: " +content);
+//                        startActivity(new Intent(DriverLogin.this, MainDriverActivity.class).putExtra("driver", driver));
+//                }
+//                try{
+//                    Log.i("LoginBroadcastManager", "JSON: " +content);
+//                    startActivity(new Intent(DriverLogin.this, MainDriverActivity.class).putExtra("driver", Driver.fromJSON(content)));
+//                }catch (JsonParseException e){
+//                    e.printStackTrace();
+//                }
+//            }
+//
+//        }
+//    }
 }
 

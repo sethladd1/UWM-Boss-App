@@ -1,17 +1,11 @@
 package models;
 
-import android.content.SharedPreferences;
-import android.location.Geocoder;
 import android.location.Location;
-import android.os.AsyncTask;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.google.android.gms.maps.model.LatLng;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
-
-import java.util.Map;
 
 /**
  * Created by jrhayman on 4/16/17.
@@ -22,7 +16,7 @@ public class Driver implements Parcelable {
 //    public int van_id;
     @SerializedName("lat") public float loclat;
     @SerializedName("long") public float loclong;
-    public boolean isAvailable;
+    public boolean available;
     public static final Parcelable.Creator<Driver> CREATOR = new Parcelable.Creator<Driver>(){
 
         @Override
@@ -41,7 +35,7 @@ public class Driver implements Parcelable {
         user_id = in.readInt();
         loclat = in.readFloat();
         loclong = in.readFloat();
-        isAvailable = (boolean)in.readValue(boolean.class.getClassLoader());
+        available = (boolean)in.readValue(boolean.class.getClassLoader());
     }
 
     @Override
@@ -54,25 +48,23 @@ public class Driver implements Parcelable {
         dest.writeInt(user_id);
         dest.writeFloat(loclat);
         dest.writeFloat(loclong);
-        dest.writeValue(isAvailable);
+        dest.writeValue(available);
     }
 
 
     /**
-     * @param un
      * @param uid
-     * @param vid
      * @param location
      */
     public Driver(int uid, Location location){
         user_id = uid;
         loclat = (float)location.getLatitude();
         loclong = (float)location.getLongitude();
-        isAvailable = true;
+        available = true;
     }
 
     public boolean isAvailable(){
-        return isAvailable;
+        return available;
     }
 
 //    public int getVanID(){
@@ -86,7 +78,7 @@ public class Driver implements Parcelable {
 //        return username;
 //    }
     public void setAvailability(boolean avail){
-        isAvailable = avail;
+        available = avail;
     }
     public void setLocation(Location location){
         loclat = (float)location.getLatitude();

@@ -23,13 +23,13 @@ public class User implements Parcelable{
         }
     };
 
-    public int user_id;
-    public String user_name, token;
+    public int id;
+    public String email, token;
     public boolean is_driver, is_admin;
 
     private User(Parcel in){
-        user_id = in.readInt();
-        user_name = in.readString();
+        id = in.readInt();
+        email = in.readString();
         token = in.readString();
         boolean[] bool_array = new boolean[2];
         in.readBooleanArray(bool_array);
@@ -43,15 +43,15 @@ public class User implements Parcelable{
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(user_id);
-        dest.writeString(user_name);
+        dest.writeInt(id);
+        dest.writeString(email);
         dest.writeString(token);
         dest.writeBooleanArray(new boolean[]{is_driver, is_admin});
 
     }
 
-    public User(String user_name, String token, boolean is_driver, boolean is_admin) {
-        this.user_name = user_name;
+    public User(String email, String token, boolean is_driver, boolean is_admin) {
+        this.email = email;
         this.token = token;
         this.is_driver = is_driver;
         this.is_admin = is_admin;
@@ -71,7 +71,7 @@ public class User implements Parcelable{
         return is_admin;
     }
     public String getUserName(){
-        return user_name;
+        return email;
     }
     public String getToken(){
         return token;

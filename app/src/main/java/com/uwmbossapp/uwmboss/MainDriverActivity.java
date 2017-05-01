@@ -20,10 +20,13 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebViewFragment;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
@@ -53,7 +56,7 @@ public class MainDriverActivity extends AppCompatActivity
     private Fragment frag_view;
     private Location location;
     private static final int GET_LOC_PERMISSION = 25;
-    private Button availability_button;
+    private CheckBox availability_button;
     private Button cancel_ride_button;
     private Button delete_ride_button;
     private Ride ride;
@@ -124,12 +127,15 @@ public class MainDriverActivity extends AppCompatActivity
                 PATCH_Ride(ride);
             }
         });
-        availability_button = (Button) findViewById(R.id.driver_availability);
-        availability_button.setOnClickListener(new View.OnClickListener() {
+        availability_button = (CheckBox) findViewById(R.id.driver_availability);
+//        if(driver != null){
+//            availability_button.setChecked(driver.isAvailable());
+//        }
+        availability_button.setChecked(driver.isAvailable());
+        availability_button.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onClick(View v) {
-                //TODO make sure that they aren't paired with a driver
-                driver.setAvailability(!driver.isAvailable());
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                driver.setAvailability(isChecked);
                 PATCH_Driver(driver);
             }
         });
@@ -141,9 +147,10 @@ public class MainDriverActivity extends AppCompatActivity
                 deleteRide();
             }
         });
+
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(new DriverBroadcastReceiver(), new IntentFilter(MyService.MY_SERVICE_MESSAGE));
-        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(new RideBroadcastReceiver(), new IntentFilter(MyFirebaseMessagingService.FIREBASE_MESSAGING_SERVICE_PAYLOAD));
-        frag_view = DriverHomeFragment.newInstance(driver.getLocation());
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(new RideBroadcastReceiver(), new IntentFilter(MyFirebaseMessagingService.FIREBASE_MESSAGING_SERVICE));
+        frag_view = DriverHomeFragment.newInstance();
         final FragmentTransaction init_transaction = fragment_manager.beginTransaction();
         init_transaction.replace(frag_container.getId(), frag_view).commit();
     }
@@ -335,7 +342,9 @@ public class MainDriverActivity extends AppCompatActivity
                         Toast.makeText(MainDriverActivity.this, "Didn't Receive Driver Info", Toast.LENGTH_SHORT).show();
                     }else{
                         try {
-                            driver = Driver.fromJSON(message);
+                            Driver updatedDriver = Driver.fromJSON(message);
+                            if(updatedDriver != null)
+                                driver = Driver.fromJSON(message);
                         }catch (JsonParseException e){
                             e.printStackTrace();
                         }
@@ -354,6 +363,19 @@ public class MainDriverActivity extends AppCompatActivity
                         Toast.makeText(MainDriverActivity.this, "Error: " + intent.getStringExtra("errorMessage"), Toast.LENGTH_SHORT).show();
                     }
                     break;
+                case "https://uwm-boss.com/admin/rides/show":
+                    if(intent.getBooleanExtra("success", false)){
+                        if(message != null){
+                            try{
+                                Log.i("Ride Received",message);
+                                Toast.makeText(context, "getting ride", Toast.LENGTH_SHORT).show();
+                                ride = Ride.fromJSON(message);
+                                newRide();
+                            }catch (JsonParseException e){
+                                e.printStackTrace();
+                            }
+                        }
+                    }
             }
         }
 
@@ -365,8 +387,10 @@ public class MainDriverActivity extends AppCompatActivity
             String content = intent.getStringExtra(MyFirebaseMessagingService.FIREBASE_MESSAGING_SERVICE_PAYLOAD);
 
             try {
-                ride = Ride.fromJSON(content);
-                newRide();
+                //ride = Ride.fromJSON(content);
+                Toast.makeText(context, "Recieved Push Notification", Toast.LENGTH_SHORT).show();
+                callServer("https://uwm-boss.com/admin/rides/show", null, "GET");
+//                newRide();
             }catch (JsonParseException e){
                 e.printStackTrace();
             }
