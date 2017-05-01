@@ -34,6 +34,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.gson.JsonParseException;
 import com.uwmbossapp.uwmboss.services.MyFirebaseMessagingService;
 import com.uwmbossapp.uwmboss.services.MyService;
@@ -99,6 +100,33 @@ public class MainDriverActivity extends AppCompatActivity
                     case R.id.driver_queue_table:
 //                        frag_view = PassengerQueueTableFragment.newInstance(0);
                         return false;
+                    case R.id.ride_navigation:
+                        if(ride!=null){
+                            String saddr = "saddr=";
+                            String daddr = "daddr=";
+                            String googleMapsNavigationURL = "https://maps.google.com/maps?";
+                            if (ContextCompat.checkSelfPermission(MainDriverActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
+                                Location currentLocation = LocationServices.FusedLocationApi.getLastLocation(api_client);
+                                LatLng pickup = new LatLng(ride.picklat, ride.picklong);
+                                LatLng destination = new LatLng(ride.destlat, ride.destlong);
+                                if (pickup != null) {
+                                    googleMapsNavigationURL += saddr + ""+currentLocation.getLatitude()+ ","+currentLocation.getLongitude()+ "&"
+                                            + daddr + "" + pickup.latitude + "," + pickup.longitude + "";
+                                    pickup = null;
+                                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(googleMapsNavigationURL)));
+
+                                } else if (pickup == null) {
+                                    googleMapsNavigationURL += saddr + "" + currentLocation.getLatitude()+ ","+currentLocation.getLongitude()+ "&"
+                                            + daddr + "" + destination.latitude + "," + destination.longitude + "";
+                                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(googleMapsNavigationURL)));
+                                } else {
+                                    Toast.makeText(MainDriverActivity.this, "Can't Navigate without a PickUp or Destination", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        }else{
+                            return false;
+                        }
+                        return true;
                     case R.id.driver_logout:
                         logoutDriver();
                         startActivity(new Intent(MainDriverActivity.this, MainActivity.class));

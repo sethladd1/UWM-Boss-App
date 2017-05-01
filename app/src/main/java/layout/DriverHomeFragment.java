@@ -271,24 +271,24 @@ public class DriverHomeFragment extends SupportMapFragment
         map_navigation_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                    String saddr = "saddr=";
-                    String daddr = "daddr=";
-                    String googleMapsNavigationURL = "https://maps.google.com/maps?";
+                String saddr = "saddr=";
+                String daddr = "daddr=";
+                String googleMapsNavigationURL = "https://maps.google.com/maps?";
                 if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
-                        Location currentLocation = LocationServices.FusedLocationApi.getLastLocation(api_client);
-                        if (pickup_marker != null) {
-                            googleMapsNavigationURL += saddr + ""+currentLocation.getLatitude()+ ","+currentLocation.getLongitude()+ "&"
-                                    + daddr + "" + pickup_marker.getPosition().latitude + "," + pickup_marker.getPosition().longitude + "";
-                            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(googleMapsNavigationURL)));
+                    Location currentLocation = LocationServices.FusedLocationApi.getLastLocation(api_client);
+                    if (pickup_marker != null) {
+                        googleMapsNavigationURL += saddr + ""+currentLocation.getLatitude()+ ","+currentLocation.getLongitude()+ "&"
+                                + daddr + "" + pickup_marker.getPosition().latitude + "," + pickup_marker.getPosition().longitude + "";
+                        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(googleMapsNavigationURL)));
 
-                        } else if (dest_marker != null) {
-                            googleMapsNavigationURL += saddr + "" + currentLocation.getLatitude()+ ","+currentLocation.getLongitude()+ "&"
-                                    + daddr + "" + dest_marker.getPosition().latitude + "," + dest_marker.getPosition().latitude + "";
-                            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(googleMapsNavigationURL)));
-                        } else {
-                            Toast.makeText(DriverHomeFragment.this.getContext(), "Can't Navigate without a PickUp or Destination", Toast.LENGTH_SHORT).show();
-                        }
+                    } else if (dest_marker != null) {
+                        googleMapsNavigationURL += saddr + "" + currentLocation.getLatitude()+ ","+currentLocation.getLongitude()+ "&"
+                                + daddr + "" + dest_marker.getPosition().latitude + "," + dest_marker.getPosition().latitude + "";
+                        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(googleMapsNavigationURL)));
+                    } else {
+                        Toast.makeText(DriverHomeFragment.this.getContext(), "Can't Navigate without a PickUp or Destination", Toast.LENGTH_SHORT).show();
                     }
+                }
             }
 
         });
@@ -310,7 +310,7 @@ public class DriverHomeFragment extends SupportMapFragment
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
                 .title("Destination"));
         generateLocationButtons(ride.picklat, ride.picklong, ride.destlat, ride.destlong);
-        
+
     }
 
     public void removePassenger(){

@@ -23,6 +23,11 @@
         android:icon="@drawable/ic_menu"
         android:title="Queue Table"/>
     <item
+        android:id="@+id/ride_navigation"
+        android:icon="@drawable/ic_navigation"
+        android:title="Ride Navigation"
+        />
+    <item
         android:id="@+id/driver_logout"
         android:icon="@drawable/driver_logout"
         android:title="Logout"
