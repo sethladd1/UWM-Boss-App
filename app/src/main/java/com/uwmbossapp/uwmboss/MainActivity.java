@@ -536,17 +536,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         boolean granted = true;
-        for (int i = 0; i < grantResults.length; ++i) {
-            if (grantResults[i] != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+        for (int grantResult : grantResults) {
+            if (grantResult != PackageManager.PERMISSION_GRANTED) {
                 granted = false;
                 break;
             }
         }
         if (granted) {
-            if (requestCode == SETCURLOCPERMISSION) {
-                return;
-            }
-            else if(requestCode==SETDESTTOCURLOC){
+            if(requestCode==SETDESTTOCURLOC){
                 getRide(null);
             }
             else if(requestCode==GET_LOCATION_PERMISSION){

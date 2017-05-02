@@ -7,6 +7,9 @@
 /build
 /captures
 .externalNativeBuild
-google-services.json
 libs/
 
+app/src/androidTest/
+app/src/test/
+src/androidTest/
+src/test/
