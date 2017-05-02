@@ -28,7 +28,7 @@ public class RateDriverActivity extends AppCompatActivity {
     }
     public void onAccept(View v){
         Toast.makeText(this, "Thanks for the Feedback", Toast.LENGTH_SHORT).show();
-        callServer(RATINGSURL+ ratingBar.getNumStars(), null, "GET");
+        callServer(RATINGSURL+ ratingBar.getRating(), null, "GET");
         this.finish();
     }
     public void callServer(String url, String message, String requestType) {
